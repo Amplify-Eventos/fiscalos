@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = "postgresql://postgres:Sagradafamili-1@db.uwrrgvemohfbacovzxsh.supabase.co:5432/postgres"
+}
+
+// Enum para o plano do usuário
+enum PlanTier {
+  FREE
+  PRO
+  AGENCY
+}
+
+// Modelo de Usuário (Contador)
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  planTier  PlanTier @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clients   Client[]
+
+  @@map("users")
+}
+
+// Modelo de Cliente (Empresa)
+model Client {
+  id              String   @id @default(uuid())
+  userId          String
+  cnpj            String
+  companyName     String
+  cnaeMain        String
+  employeesCount  Int      @default(0)
+  revenueLast12m  Decimal  @db.Decimal(15, 2)
+  payrollLast12m  Decimal  @db.Decimal(15, 2)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  simulations     Simulation[]
+
+  @@map("clients")
+}
+
+// Modelo de Simulação (Planejamento Fiscal)
+model Simulation {
+  id             String   @id @default(uuid())
+  clientId       String
+  createdAt      DateTime @default(now())
+  
+  inputData      Json 
+  resultData     Json
+  selectedRegime String?
+
+  client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("simulations")
+}
