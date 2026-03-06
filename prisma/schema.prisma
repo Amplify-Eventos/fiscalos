@@ -1,10 +1,14 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider  = "postgresql"
-  url       = "postgresql://postgres:Sagradafamili-1@db.uwrrgvemohfbacovzxsh.supabase.co:5432/postgres"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // Enum para o plano do usuário
@@ -12,6 +16,40 @@ enum PlanTier {
   FREE
   PRO
   AGENCY
+}
+
+// Enum para regime tributário
+enum TaxRegime {
+  SIMPLES_NACIONAL
+  LUCRO_PRESUMIDO
+  LUCRO_REAL
+  MEI
+}
+
+// Enum para natureza jurídica
+enum LegalNature {
+  LTDA
+  SLU
+  MEI
+  EI
+  SA
+  EIRELI
+}
+
+// Enum para porte
+enum CompanySize {
+  ME
+  EPP
+  DEMAIS
+}
+
+// Enum para tipo de receita
+enum RevenueType {
+  SERVICOS
+  COMERCIO
+  INDUSTRIA
+  LOCACAO
+  MISTO
 }
 
 // Modelo de Usuário (Contador)
@@ -28,17 +66,67 @@ model User {
   @@map("users")
 }
 
-// Modelo de Cliente (Empresa)
+// Modelo de Cliente (Empresa) - ATUALIZADO COM CAMPOS COMPLETOS
 model Client {
   id              String   @id @default(uuid())
   userId          String
+  
+  // === DADOS JURÍDICOS ===
   cnpj            String
   companyName     String
-  cnaeMain        String
-  employeesCount  Int      @default(0)
-  revenueLast12m  Decimal  @db.Decimal(15, 2)
-  payrollLast12m  Decimal  @db.Decimal(15, 2)
+  fantasyName     String?
+  openingDate     DateTime?
+  legalNature     LegalNature?
+  companySize     CompanySize?
+  taxRegime       TaxRegime?
+  simplesOpt      Boolean? // Opção pelo Simples
   
+  // === ATIVIDADE ECONÔMICA ===
+  cnaeMain        String
+  cnaeSecondary   String? // CNAEs secundários (separados por vírgula)
+  activityDesc    String?
+  revenueType     RevenueType?
+  
+  // === DADOS FINANCEIROS ===
+  revenueServicos Decimal? @db.Decimal(15, 2)
+  revenueComercio Decimal? @db.Decimal(15, 2)
+  revenueLocacao  Decimal? @db.Decimal(15, 2)
+  revenueOutros   Decimal? @db.Decimal(15, 2)
+  revenueLast12m  Decimal  @db.Decimal(15, 2)
+  ticketMedio     Decimal? @db.Decimal(10, 2)
+  clientCount     Int?
+  sazonality      String?
+  
+  // === CUSTOS E DESPESAS ===
+  payrollLast12m  Decimal  @db.Decimal(15, 2)
+  rentExpense     Decimal? @db.Decimal(15, 2)
+  supplierExpense Decimal? @db.Decimal(15, 2)
+  logisticExpense Decimal? @db.Decimal(15, 2)
+  marketingExpense Decimal? @db.Decimal(15, 2)
+  adminExpense    Decimal? @db.Decimal(15, 2)
+  
+  // === DADOS TRABALHISTAS ===
+  employeesCount  Int      @default(0)
+  totalSalary     Decimal? @db.Decimal(15, 2)
+  proLabore       Decimal? @db.Decimal(15, 2)
+  benefits        Decimal? @db.Decimal(15, 2)
+  
+  // === LOCALIZAÇÃO ===
+  municipio       String?  // Nome do município
+  municipioIBGE   String?  // Código IBGE
+  uf              String?  // Estado (SP, RJ, etc.)
+  
+  // === DADOS FISCAIS ATUAIS ===
+  currentDAS      Decimal? @db.Decimal(10, 2)
+  currentIRPJ     Decimal? @db.Decimal(10, 2)
+  currentCSLL     Decimal? @db.Decimal(10, 2)
+  currentPIS      Decimal? @db.Decimal(10, 2)
+  currentCOFINS   Decimal? @db.Decimal(10, 2)
+  currentISS      Decimal? @db.Decimal(10, 2)
+  currentICMS     Decimal? @db.Decimal(10, 2)
+  currentINSS     Decimal? @db.Decimal(10, 2)
+  
+  // === METADADOS ===
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -61,4 +149,52 @@ model Simulation {
   client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@map("simulations")
+}
+
+// === TABELAS AUXILIARES FISCAIS (NOVAS) ===
+
+// Tabela de CNAE com mapeamento de Anexos
+model CnaeCode {
+  id              String   @id @default(uuid())
+  code            String   @unique // Código CNAE (ex: 6202-3/00)
+  description     String
+  anexoSimples    String   // I, II, III, IV, V ou N/A
+  canBeSimples    Boolean  @default(true)
+  issPercentage   Decimal? @db.Decimal(4, 2) // ISS padrão para esse CNAE
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("cnae_codes")
+}
+
+// Tabela de ISS por Município
+model IssRate {
+  id              String   @id @default(uuid())
+  ibgeCode        String   @unique // Código IBGE do município
+  cityName        String
+  stateCode       String   // UF
+  issRate         Decimal  @db.Decimal(4, 2) // Alíquota ISS (2.0 a 5.0)
+  effectiveDate   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("iss_rates")
+}
+
+// Tabela de Alíquotas Simples Nacional (todas as faixas)
+model SimplesRate {
+  id              String   @id @default(uuid())
+  anexo           String   // I, II, III, IV, V
+  faixa           Int      // 1 a 6
+  limiteInferior  Decimal  @db.Decimal(15, 2)
+  limiteSuperior  Decimal  @db.Decimal(15, 2)
+  aliquota        Decimal  @db.Decimal(5, 4) // Ex: 0.0600 = 6%
+  deducao         Decimal  @db.Decimal(15, 2)
+  percentualCPP   Decimal  @db.Decimal(5, 4) @default(0) // Percentual do CPP nesta faixa
+  effectiveYear   Int      @default(2026)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([anexo, faixa])
+  @@map("simples_rates")
 }

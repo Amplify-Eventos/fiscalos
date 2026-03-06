@@ -1,89 +1,207 @@
-# Funcionalidades (Features)
+# FiscalOS - Funcionalidades
 
-## 🌟 Core Features (Essenciais)
+## 🔮 Digital Twin Fiscal
 
-Funcionalidades fundamentais para o funcionamento do sistema e entrega de valor imediato.
+Cria uma réplica virtual da empresa para simular cenários sem riscos.
 
-### 1. Gestão de Clientes
-- **Cadastro de Empresas:**
-  - Dados cadastrais (CNPJ, Razão Social, CNAE)
-  - Histórico de faturamento (últimos 12 meses)
-  - Número de funcionários e folha de pagamento
-  - Regime tributário atual
-- **Dashboard de Clientes:**
-  - Listagem de empresas cadastradas
-  - Status do último planejamento (Em dia / Vencido)
-  - Filtros por regime e faturamento
+### Dados Modelados
+- **Identificação:** CNPJ, razão social, natureza jurídica, porte
+- **Atividade:** CNAE principal e secundários, tipo de receita
+- **Financeiro:** Receitas por tipo (Serviços, Comércio, Locação), ticket médio, clientes
+- **Custos:** Folha de pagamento, aluguel, fornecedores, marketing, administrativo
+- **Trabalhista:** Funcionários, salários, pró-labore, benefícios
+- **Localização:** Município (código IBGE) para cálculo de ISS
+- **Fiscal Atual:** Impostos pagos atualmente (DAS, IRPJ, CSLL, PIS, COFINS, ISS, INSS)
 
-### 2. Motor de Cálculo Fiscal
-- **Simulação de Regimes:**
-  - Comparativo automático: Simples Nacional vs. Lucro Presumido vs. Lucro Real
-  - Cálculo de impostos federais (PIS, COFINS, IRPJ, CSLL)
-  - Cálculo de impostos estaduais/municipais (ICMS, ISS) - *Estimado inicialmente*
-  - Cálculo de encargos sobre folha (INSS patronal, RAT, Terceiros)
-- **Análise de Fator R:**
-  - Verificação automática se a empresa se enquadra no Fator R (Anexo III vs. V do Simples)
-  - Sugestão de ajuste no Pró-labore para redução de imposto
-
-### 3. Geração de Relatórios
-- **Relatório Executivo (PDF):**
-  - Capa personalizada com logo do contador
-  - Resumo executivo ("Qual o melhor regime?")
-  - Gráficos comparativos de carga tributária
-  - Tabela detalhada de impostos por regime
-  - Economia projetada anual
-- **Customização:**
-  - Opção de ocultar regimes não recomendados
-  - Campo para observações do contador
+### Capacidades do Digital Twin
+- Simular mudança de regime tributário
+- Testar abertura de nova empresa (cisão)
+- Calcular impacto de Holding familiar
+- Avaliar mudança de município
+- Detectar problemas e oportunidades
 
 ---
 
-## 🚀 Growth Features (Diferenciais)
+## ⚡ Motor Fiscal V2
 
-Funcionalidades para encantar o cliente e aumentar o valor percebido.
+Motor de cálculo 100% fiel à legislação brasileira.
 
-### 4. Inteligência Tributária
-- **Alertas de Oportunidade:**
-  - Aviso quando o faturamento se aproxima do limite do Simples
-  - Sugestão de mudança de regime baseada na tendência de crescimento
-- **Cenários Futuros:**
-  - Simulação de crescimento ("E se o faturamento aumentar 20%?")
-  - Impacto da contratação de funcionários na carga tributária
+### Simples Nacional (Anexos I-V)
+- **6 faixas progressivas** por anexo (tabela oficial)
+- **Fórmula oficial:** `(Receita × Alíquota) - Dedução`
+- **Fator R automático:** Verifica se folha ≥ 28% para Anexo III
+- **CPP:** Incluído nos anexos I, II, III, V; separado no anexo IV
 
-### 5. Área do Contador (Admin)
-- **Gestão de Equipe:**
-  - Convite para colaboradores
-  - Níveis de acesso (Admin, Analista, Leitor)
-- **Whitelabel (Marca Própria):**
-  - Configuração de logo e cores da contabilidade no sistema e relatórios
+| Anexo | Atividade | Fator R |
+|-------|-----------|---------|
+| I | Comércio | N/A |
+| II | Indústria | N/A |
+| III | Serviços com Fator R ≥ 28% | Obrigatório |
+| IV | Serviços específicos (limpeza, obras) | N/A |
+| V | Serviços com Fator R < 28% | Obrigatório |
+
+### Lucro Presumido
+- **Base de cálculo por atividade:**
+  - Serviços: 32% para IRPJ e CSLL
+  - Comércio: 8% IRPJ, 12% CSLL
+  - Locação: 32%
+- **Tributos calculados:**
+  - IRPJ: 15% + 10% adicional (acima de R$ 20k/mês)
+  - CSLL: 9%
+  - PIS: 0.65% (cumulativo)
+  - COFINS: 3% (cumulativo)
+  - ISS: 2% a 5% (conforme município)
+  - CPP/INSS: ~28% sobre folha
+
+### Lucro Real
+- IRPJ e CSLL sobre lucro real
+- PIS/COFINS não-cumulativo (1.65% + 7.6%)
+- Créditos de PIS/COFINS sobre insumos
 
 ---
 
-## 🔮 Future Features (Longo Prazo)
+## 📊 Score Fiscal (0-100)
 
-Funcionalidades para escalar e tornar o produto indispensável.
+Índice de eficiência tributária da empresa.
 
-### 6. Integrações
-- **Importação Automática:**
-  - Conexão com sistemas contábeis (Domínio, ContaAzul, Omie) via API ou arquivo
-  - Leitura de extratos do Simples Nacional (PGDAS)
-- **Busca de CNPJ:**
-  - Preenchimento automático de dados via API pública da Receita
+### Fatores do Score
 
-### 7. Monitoramento Contínuo
-- **Recorrência:**
-  - Monitoramento mensal automático
-  - Email de alerta se a estratégia tributária deixar de ser a ideal
+| Fator | Peso | O que avalia |
+|-------|------|--------------|
+| Adequação do Regime | 30% | Regime atual é o mais econômico? |
+| Fator R | 20% | Folha otimizada para o anexo? |
+| Carga Tributária | 20% | Comparativo com setor |
+| Regularidade Fiscal | 15% | Dados completos e coerentes |
+| Oportunidades | 15% | Estratégias não utilizadas |
+
+### Classificação
+
+| Score | Classificação | Ação |
+|-------|---------------|------|
+| 80-100 | 🟢 ÓTIMO | Manter estrutura |
+| 60-79 | 🔵 BOM | Pequenas otimizações |
+| 40-59 | 🟡 REGULAR | Revisar regime |
+| 20-39 | 🟠 RUIM | Mudança urgente |
+| 0-19 | 🔴 CRÍTICO | Reestruturação necessária |
 
 ---
 
-## ✅ Feature List para MVP
+## 🔄 Simulações Automáticas
 
-Para a versão 1.0 (MVP), focaremos estritamente em:
+O sistema roda **180+ cenários automaticamente:**
 
-1. **Cadastro Manual de Cliente** (CNPJ + Faturamento + Folha)
-2. **Cálculo Comparativo** (Simples vs. Presumido)
-3. **Análise de Fator R** (Simples Nacional)
-4. **Geração de Relatório PDF** (Template fixo limpo)
+### Dimensões Testadas
 
-*Lucro Real e integrações ficam para a V2.*
+1. **Regimes (3):** Simples, Presumido, Real
+2. **Estruturas (3):** Empresa única, 2 empresas, Holding
+3. **Anexos Simples (5):** I, II, III, IV, V (respeitando tipo de atividade)
+4. **Estratégias:** Aumento de pró-labore, mudança de município
+
+### Regras de Negócio nas Simulações
+
+- Serviços com Fator R ≥ 28% → Anexo III
+- Serviços com Fator R < 28% → Anexo V
+- Comércio → Anexo I ou II
+- Indústria → Anexo II
+- Locação → Anexo III
+
+---
+
+## 📋 Relatórios Consultivos
+
+PDF profissional pronto para enviar ao cliente.
+
+### Conteúdo do Relatório
+
+1. **Capa**
+   - Nome da empresa, CNPJ, data
+
+2. **Score Fiscal Visual**
+   - Círculo colorido com pontuação
+   - Classificação textual
+   - Métricas resumidas
+
+3. **Melhor Cenário Identificado**
+   - Nome do cenário
+   - Descrição explicativa
+   - Economia anual estimada
+
+4. **Top 10 Simulações**
+   - Tabela ordenada por economia
+   - Imposto anual, alíquota efetiva, economia
+
+5. **Plano de Ação Estratégico**
+   - Estratégias detectadas
+   - Passos para implementação
+   - ROI de cada ação
+   - Prazo estimado
+
+6. **Pontos de Atenção**
+   - Problemas detectados
+   - Riscos identificados
+
+---
+
+## 🏙️ Banco Legislativo
+
+Dados oficiais no banco de dados, não em constantes fixas.
+
+### Tabelas Auxiliares
+
+| Tabela | Dados | Registros |
+|--------|-------|-----------|
+| `simples_rates` | Faixas do Simples Nacional | 30 (6 faixas × 5 anexos) |
+| `cnae_codes` | CNAEs mapeados | 13 |
+| `iss_rates` | ISS por município | 12 capitais |
+
+### Municípios com ISS no Banco
+
+| Município | ISS |
+|-----------|-----|
+| São Paulo | 5% |
+| Rio de Janeiro | 5% |
+| Belo Horizonte | 3% |
+| Curitiba | 5% |
+| Porto Alegre | 4% |
+| Brasília | 2% |
+| Salvador | 5% |
+| Fortaleza | 5% |
+| Recife | 5% |
+| Goiânia | 5% |
+| Florianópolis | 2% |
+
+---
+
+## 📱 Interface do Sistema
+
+### Páginas Implementadas
+
+1. **Landing Page** (`/`)
+   - Hero section
+   - Explicação do produto
+   - CTA para cadastro
+
+2. **Autenticação** (`/login`, `/cadastro`)
+   - Email/senha (Supabase Auth)
+   - Validação de campos
+   - Tratamento de erros
+
+3. **Dashboard** (`/dashboard`)
+   - Lista de clientes
+   - Busca por nome
+   - Card com Score Fiscal
+
+4. **Cadastro de Cliente** (`/dashboard/clientes/novo`)
+   - Formulário em 4 etapas
+   - Seleção de município
+   - Validação de campos obrigatórios
+
+5. **Detalhes do Cliente** (`/dashboard/clientes/[id]`)
+   - Score Fiscal detalhado
+   - Top 10 simulações
+   - Estratégias recomendadas
+   - Botão para gerar PDF
+
+6. **API de PDF** (`/api/pdf/[id]`)
+   - Geração de relatório HTML
+   - Abre em nova aba para impressão/salvar

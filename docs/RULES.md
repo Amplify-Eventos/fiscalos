@@ -1,88 +1,267 @@
-# Regras Fiscais & Lógica de Negócio
+# FiscalOS - Regras de Negócio
 
-## 📚 Base Legal
+## 📋 Regras do Simples Nacional
 
-O motor de cálculo do FiscalOS deve seguir a legislação tributária brasileira vigente (2026).
-*Nota: Valores e alíquotas devem ser parametrizáveis no banco de dados para fácil atualização.*
+### Elegibilidade
 
----
+| Condição | Regra |
+|----------|-------|
+| Faturamento | ≤ R$ 4.800.000 em 12 meses |
+| Natureza Jurídica | LTDA, SLU, MEI, EI, EIRELI |
+| Natureza Jurídica | S.A. NÃO pode |
+| Débitos tributários | Não pode ter débitos inscritos em Dívida Ativa |
 
-## 1. Simples Nacional
+### Anexos por Atividade
 
-### Definição
-Regime simplificado para Microempresas (ME) e Empresas de Pequeno Porte (EPP) com faturamento até R$ 4,8 milhões/ano.
+| Anexo | Atividade | Fator R |
+|-------|-----------|---------|
+| **I** | Comércio (revenda de mercadorias) | N/A |
+| **II** | Indústria (fabricação) | N/A |
+| **III** | Serviços com Fator R ≥ 28% | **Obrigatório** |
+| **IV** | Serviços específicos (limpeza, construção, advocacia) | N/A |
+| **V** | Serviços com Fator R < 28% | **Obrigatório** |
 
-### Anexos (Tabelas de Alíquotas)
-O sistema deve suportar os 5 anexos principais:
+### Fator R
 
-- **Anexo I:** Comércio
-- **Anexo II:** Indústria
-- **Anexo III:** Serviços (Instalação, reparos, agências de viagem, escritórios de contabilidade, etc.)
-- **Anexo IV:** Serviços (Limpeza, vigilância, obras, construção civil, etc.) - *Atenção: CPP à parte*
-- **Anexo V:** Serviços (Auditoria, jornalismo, tecnologia, publicidade, engenharia, etc.)
-
-### Cálculo do Imposto (RBT12)
-A alíquota efetiva não é fixa, depende da Receita Bruta nos últimos 12 meses (RBT12).
-
-**Fórmula:**
 ```
-(RBT12 × Alíquota Nominal) - Parcela a Deduzir
-----------------------------------------------  = Alíquota Efetiva
-                  RBT12
+Fator R = Folha de Pagamento 12 meses ÷ Receita Bruta 12 meses
 ```
 
-### O Fator R
-Crucial para empresas de serviços (intelectuais, saúde, etc.). Define se a empresa paga pelo Anexo III (mais barato) ou Anexo V (mais caro).
+| Situação | Resultado |
+|----------|-----------|
+| Fator R ≥ 28% | Pode usar Anexo III (mais barato) |
+| Fator R < 28% | Obrigado a usar Anexo V (mais caro) |
 
-**Regra:**
-- Se **Folha de Pagamento (últimos 12m)** >= **28%** da **Receita Bruta (últimos 12m)** → **Anexo III** ✅
-- Se **Folha de Pagamento (últimos 12m)** < **28%** da **Receita Bruta (últimos 12m)** → **Anexo V** ❌
+### Cálculo do DAS
 
-*O sistema deve calcular isso automaticamente e alertar: "Aumente seu pró-labore em R$ X para economizar R$ Y de imposto".*
+```
+DAS Mensal = (RBT12 × Alíquota - Dedução) ÷ RBT12 × Receita Mensal
+```
 
----
-
-## 2. Lucro Presumido
-
-### Definição
-Regime onde o IR e CSLL são calculados sobre uma margem de lucro pré-definida (presumida) pela lei, não sobre o lucro real.
-
-### Base de Cálculo (Presunção)
-- **Comércio/Indústria:** 8% (IRPJ) e 12% (CSLL) sobre faturamento.
-- **Serviços:** 32% (IRPJ e CSLL) sobre faturamento.
-
-### Alíquotas Federais (Padrão)
-- **PIS:** 0,65%
-- **COFINS:** 3,00%
-- **IRPJ:** 15% (sobre a base presumida) + 10% de adicional sobre o que exceder R$ 60k/trimestre.
-- **CSLL:** 9% (sobre a base presumida).
-
-### Alíquotas Municipais/Estaduais
-- **ISS (Serviços):** Varia de 2% a 5% (depende do município). *No MVP, usaremos input ou padrão de 5%.*
-- **ICMS (Comércio):** Varia por estado (ex: 18% SP, mas com créditos). *Complexo para MVP, focar em serviços primeiro ou usar alíquota efetiva estimada.*
-
-### Custo de Folha (CPP)
-No Lucro Presumido, a empresa paga **20% de INSS Patronal** sobre a folha + RAT + Terceiros (totalizando ~27-28% sobre a folha).
-*Diferente do Simples (Anexos I, II, III, V) onde o INSS Patronal já está incluso na guia única (DAS).*
+Onde:
+- **RBT12** = Receita Bruta Total dos últimos 12 meses
+- **Alíquota** = Alíquota da faixa correspondente
+- **Dedução** = Valor a deduzir da faixa
 
 ---
 
-## 3. Lucro Real (Não incluso no MVP)
+## 📋 Regras do Lucro Presumido
 
-Regime obrigatório para faturamento > R$ 78 milhões ou setor financeiro.
-Baseado no lucro contábil real (Receitas - Despesas).
-*Complexidade alta devido à necessidade de apurar despesas dedutíveis.*
+### Base de Cálculo por Atividade
+
+| Atividade | IRPJ | CSLL |
+|-----------|------|------|
+| Serviços em geral | 32% | 32% |
+| Comércio | 8% | 12% |
+| Locação de bens móveis | 32% | 32% |
+| Transporte de carga | 8% | 12% |
+| Serviços hospitalares | 8% | 12% |
+
+### Alíquotas
+
+| Tributo | Alíquota |
+|---------|----------|
+| IRPJ | 15% sobre a base |
+| Adicional IRPJ | 10% sobre excedente de R$ 20.000/mês |
+| CSLL | 9% sobre a base |
+| PIS | 0,65% sobre receita |
+| COFINS | 3% sobre receita |
+| ISS | 2% a 5% (conforme município) |
+
+### Exemplo de Cálculo
+
+```
+Empresa de Serviços - Receita: R$ 100.000/mês
+
+IRPJ:
+  Base = R$ 100.000 × 32% = R$ 32.000
+  IRPJ = R$ 32.000 × 15% = R$ 4.800
+
+CSLL:
+  Base = R$ 100.000 × 32% = R$ 32.000
+  CSLL = R$ 32.000 × 9% = R$ 2.880
+
+PIS/COFINS:
+  PIS = R$ 100.000 × 0,65% = R$ 650
+  COFINS = R$ 100.000 × 3% = R$ 3.000
+
+ISS (São Paulo 5%):
+  ISS = R$ 100.000 × 5% = R$ 5.000
+
+Total Mensal = R$ 16.330 (16,33% efetivo)
+```
 
 ---
 
-## 🧠 Lógica de Comparação (O "Cérebro" do Sistema)
+## 📋 Regras do Lucro Real
 
-Para recomendar o melhor regime, o sistema deve:
+### Conceito
+- Tributação sobre o **lucro real** (não presunção)
+- Apurado pela contabilidade
 
-1. Calcular o imposto total anual estimado no **Simples Nacional** (considerando Fator R).
-2. Calcular o imposto total anual estimado no **Lucro Presumido** (PIS+COFINS+IR+CSLL+ISS/ICMS + INSS Patronal sobre folha).
-3. Comparar os totais.
-4. Exibir a diferença (Economia) e recomendar o menor valor.
+### Alíquotas
 
-**Exemplo de Output:**
-> "Sua empresa economizaria **R$ 15.400,00/ano** optando pelo **Simples Nacional (Anexo III)**, desde que mantenha o Fator R acima de 28%."
+| Tributo | Alíquota |
+|---------|----------|
+| IRPJ | 15% sobre lucro |
+| Adicional IRPJ | 10% sobre excedente de R$ 20.000/mês |
+| CSLL | 9% sobre lucro |
+| PIS | 1,65% sobre receita (não-cumulativo) |
+| COFINS | 7,6% sobre receita (não-cumulativo) |
+
+### Créditos de PIS/COFINS
+- Insumos comprados geram crédito
+- Reduz tributo final
+- Complexo de calcular (precisa de dados de compras)
+
+---
+
+## 🎯 Regras do Score Fiscal
+
+### Fatores e Pesos
+
+| Fator | Peso | Como Calcula |
+|-------|------|--------------|
+| Adequação do Regime | 30% | Compara imposto atual vs melhor cenário |
+| Fator R | 20% | Se está otimizado (≥28% para serviços) |
+| Carga Tributária | 20% | Compara com média do setor |
+| Regularidade Fiscal | 15% | Dados completos e coerentes |
+| Oportunidades | 15% | Estratégias disponíveis |
+
+### Fórmula por Fator
+
+**1. Adequação do Regime (30%)**
+```
+Economia Potencial = (Melhor Cenário - Atual) / Receita
+
+Se economia > 15% → Nota 20
+Se economia > 10% → Nota 40
+Se economia > 5%  → Nota 60
+Se economia > 0%  → Nota 80
+Se economia = 0%  → Nota 100
+```
+
+**2. Fator R (20%)**
+```
+Se serviços:
+  Se Fator R >= 28% → Nota 100
+  Se Fator R >= 20% → Nota 60
+  Se Fator R < 20%  → Nota 20
+
+Se comércio/indústria:
+  Nota 100 (não se aplica)
+```
+
+**3. Carga Tributária (20%)**
+```
+Comparar alíquota efetiva com benchmark do setor
+
+Se abaixo da média → Nota 100
+Se na média        → Nota 70
+Se acima da média  → Nota 40
+```
+
+---
+
+## 📏 Regras de Simulação
+
+### Anexos Permitidos por Tipo
+
+```typescript
+SERVIÇOS:
+  Se FatorR >= 28% → Anexo III
+  Se FatorR < 28%  → Anexo V
+
+COMÉRCIO:
+  → Anexo I
+
+INDÚSTRIA:
+  → Anexo II
+
+LOCAÇÃO:
+  → Anexo III
+
+MISTO:
+  → Depende da receita predominante
+```
+
+### Estruturas de Empresa
+
+| Estrutura | Condição | Benefício |
+|-----------|----------|-----------|
+| Empresa Única | Padronão | Sem economia adicional |
+| 2 Empresas | Receita > R$ 4,8M | Cada uma no Simples |
+| Holding | Sempre viável | ~5% economia (aproximação) |
+
+---
+
+## 🏙️ Regras de ISS
+
+### Variação por Município
+
+| Município | ISS | Observação |
+|-----------|-----|------------|
+| São Paulo | 5% | Padrão |
+| Rio de Janeiro | 5% | Padrão |
+| Brasília | 2% | Incentivo TI |
+| Florianópolis | 2% | Polo tecnológico |
+| Belo Horizonte | 3% | Intermediário |
+
+### Estratégia de Mudança
+- Calcula economia de mudar para município com ISS menor
+- Considera custo de mudança (aluguel, logística)
+- ROI da operação
+
+---
+
+## ⚠️ Alertas e Restrições
+
+### Limite do Simples Nacional
+```
+Se receita > R$ 4.800.000:
+  ❌ Não pode Simples Nacional
+  ✅ Sugerir Lucro Presumido ou Real
+```
+
+### Fator R Crítico
+```
+Se serviços e Fator R < 20%:
+  ⚠️ Alerta vermelho
+  💡 Sugerir aumento de pró-labore
+```
+
+### Próximo do Limite
+```
+Se receita > R$ 4.000.000:
+  ⚠️ Alerta amarelo
+  💡 Planejar transição de regime
+```
+
+---
+
+## 📊 Constantes do Sistema
+
+```typescript
+const LIMITES = {
+  SIMPLES_NACIONAL: 4_800_000,    // R$ 4,8 milhões
+  MEI: 81_000,                     // R$ 81 mil
+  FATOR_R_IDEAL: 0.28,             // 28%
+  ADICIONAL_IRPJ_LIMITE: 20_000,   // R$ 20k/mês
+}
+
+const ALIQUOTAS = {
+  IRPJ_BASE: 0.15,                 // 15%
+  IRPJ_ADICIONAL: 0.10,            // 10%
+  CSLL: 0.09,                      // 9%
+  PIS_CUMULATIVO: 0.0065,          // 0,65%
+  COFINS_CUMULATIVO: 0.03,         // 3%
+  CPP: 0.28,                       // ~28% sobre folha
+}
+
+const BASES_CALCULO = {
+  IRPJ_SERVICOS: 0.32,             // 32%
+  CSLL_SERVICOS: 0.32,             // 32%
+  IRPJ_COMERCIO: 0.08,             // 8%
+  CSLL_COMERCIO: 0.12,             // 12%
+}
+```

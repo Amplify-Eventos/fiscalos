@@ -1,74 +1,212 @@
-# MVP (Mínimo Produto Viável)
+# FiscalOS - MVP
 
-## 🎯 Objetivo do MVP
+## 🎯 Definição do MVP
 
-Validar a proposta de valor principal: **"Gerar um planejamento fiscal comparativo profissional em menos de 5 minutos."**
+**MVP = Minimum Viable Product**
 
-Não precisamos de todas as features. Precisamos que o **cálculo esteja certo** e o **relatório seja útil**.
-
----
-
-## 📦 Escopo Fechado
-
-### 1. Funcionalidades Incluídas
-
-#### A. Autenticação Simples
-- Login/Cadastro com Email e Senha (via Supabase)
-- Recuperação de senha
-- Perfil básico do usuário (Nome, Nome do Escritório)
-
-#### B. Gestão de Clientes (CRUD Básico)
-- Adicionar empresa (Nome, Faturamento Médio Mensal, Folha Salarial Mensal, Atividade Principal)
-- Listar empresas cadastradas
-- Editar/Excluir empresa
-
-#### C. Motor de Cálculo (Versão 1.0)
-- **Comparativo Fixo:** Simples Nacional (Anexos I, II, III, IV, V) vs. Lucro Presumido
-- **Fator R:** Cálculo automático para decidir entre Anexo III e V
-- **Regras Fiscais:** Tabelas vigentes de 2026 (ou última atualizada)
-- **Input:** Faturamento acumulado 12 meses + Folha salarial
-
-#### D. Saída (Output)
-- Tela de resultado com:
-  - Melhor regime destacado
-  - Tabela comparativa de impostos
-  - Gráfico de pizza (Imposto vs. Faturamento)
-- **Botão "Gerar PDF":**
-  - Download de PDF limpo com logo genérico e dados da análise
-
-### 2. Funcionalidades EXCLUÍDAS do MVP (Ficam para V2)
-- ❌ Cálculo de Lucro Real (muito complexo para V1)
-- ❌ Importação automática de XML/Excel
-- ❌ Integração com APIs da Receita
-- ❌ Pagamento online (acesso liberado ou manual no início)
-- ❌ Múltiplos usuários por conta
-- ❌ Whitelabel (logo personalizado)
+O MVP do FiscalOS é um sistema funcional que permite ao contador:
+1. Cadastrar clientes com dados completos
+2. Ver análise fiscal automática (Score + Simulações)
+3. Baixar relatório PDF consultivo
 
 ---
 
-## 🗓️ Cronograma de Desenvolvimento (Sprint de 2 Semanas)
+## ✅ Funcionalidades do MVP
 
-### Semana 1: Core & Dados
-- **Dia 1:** Configuração do projeto (Next.js + Supabase) e Autenticação.
-- **Dia 2:** Modelagem do banco de dados e CRUD de Clientes.
-- **Dia 3:** Implementação das tabelas fiscais (Simples Nacional) no código.
-- **Dia 4:** Implementação da lógica de cálculo (Motor Fiscal V1).
-- **Dia 5:** Testes de cálculo com cenários reais (validar com contador).
+### 1. Autenticação
+- [x] Login com email/senha
+- [x] Cadastro de novo usuário
+- [x] Proteção de rotas
+- [x] Logout
 
-### Semana 2: Interface & Relatório
-- **Dia 6:** Interface de Input (Formulários amigáveis).
-- **Dia 7:** Dashboard e visualização de resultados (Gráficos).
-- **Dia 8:** Geração de PDF (Layout e dados dinâmicos).
-- **Dia 9:** Polimento visual (UI/UX) e correções.
-- **Dia 10:** Deploy na Vercel e testes finais.
+### 2. Gestão de Clientes
+- [x] Listar clientes
+- [x] Criar novo cliente (formulário 4 etapas)
+- [x] Ver detalhes do cliente
+- [x] Excluir cliente
+- [ ] Editar cliente (pendente)
+
+### 3. Motor Fiscal
+- [x] Simples Nacional (Anexos I-V)
+- [x] Lucro Presumido
+- [x] Lucro Real (básico)
+- [x] Análise de Fator R
+- [x] Cálculo de ISS por município
+- [x] Respeita tipo de atividade (Serviços vs Comércio)
+
+### 4. Digital Twin
+- [x] Modelagem de empresa
+- [x] Simulação de cenários
+- [x] Score Fiscal (0-100)
+- [x] Detecção de oportunidades
+- [x] Estratégias de economia
+
+### 5. Relatórios
+- [x] PDF com análise completa
+- [x] Plano de ação
+- [x] Top 10 simulações
+
+### 6. Banco Legislativo
+- [x] 30 faixas do Simples Nacional
+- [x] 13 CNAEs mapeados
+- [x] 12 capitais com ISS
 
 ---
 
-## 🧪 Critérios de Sucesso
+## 📊 Métricas de Sucesso do MVP
 
-O MVP será considerado um sucesso se:
-1. O usuário conseguir se cadastrar.
-2. O usuário cadastrar uma empresa de serviço (Anexo III/V).
-3. O sistema recomendar corretamente o regime tributário (validado por contador).
-4. O usuário conseguir baixar um PDF com essa recomendação.
-5. Todo o processo levar menos de 5 minutos.
+| Métrica | Meta |
+|---------|------|
+| Usuários beta | 50 |
+| Clientes cadastrados | 200 |
+| Simulações realizadas | 500 |
+| PDFs gerados | 100 |
+| NPS inicial | > 40 |
+
+---
+
+## 🚫 O que NÃO está no MVP
+
+### Funcionalidades Removidas para MVP
+
+| Funcionalidade | Motivo | Planejado para |
+|---------------|--------|----------------|
+| Edição de clientes | Baixa prioridade | Fase 2 |
+| Dashboard comparativo | Complexo | Fase 2 |
+| Histórico de simulações | Precisa modelagem extra | Fase 2 |
+| Exportação Excel | Nice-to-have | Fase 3 |
+| App mobile | Alto esforço | Fase 4 |
+| IA/ML | Precisa de dados | Fase 5 |
+
+---
+
+## 🧪 Testes do MVP
+
+### Cenários de Teste
+
+Criamos 3 perfis de clientes para validar:
+
+#### 🔴 Cliente Ruim (Score ~35)
+```
+Tech Desperdício LTDA
+- Receita: R$ 2.500.000
+- Folha: R$ 300.000 (Fator R = 12%)
+- Regime: Simples Nacional
+- Problema: Fator R muito baixo, pagando Anexo V caro
+- Esperado: Score baixo, alta economia potencial
+```
+
+#### 🟡 Cliente Médio (Score ~60)
+```
+Soluções Medianas LTDA
+- Receita: R$ 3.200.000
+- Folha: R$ 900.000 (Fator R = 28%)
+- Regime: Simples Nacional
+- Situação: Fator R no limite, regime adequado
+- Esperado: Score médio, pouca economia potencial
+```
+
+#### 🟢 Cliente Bom (Score ~85)
+```
+Otimiza Fiscal LTDA
+- Receita: R$ 4.500.000
+- Folha: R$ 1.500.000 (Fator R = 33%)
+- Regime: Lucro Presumido
+- Situação: Regime adequado, estrutura otimizada
+- Esperado: Score alto, mínima economia potencial
+```
+
+### Checklist de Teste
+
+- [ ] Cadastro completo de 3 clientes teste
+- [ ] Score calculado corretamente
+- [ ] Anexos respeitam tipo de atividade
+- [ ] ISS calculado com alíquota do município
+- [ ] PDF gerado sem erros
+- [ ] Estratégias detectadas fazem sentido
+
+---
+
+## 🛠️ Stack do MVP
+
+| Camada | Tecnologia | Motivo |
+|--------|------------|--------|
+| Framework | Next.js 15 | Full-stack, rápido |
+| UI | React + Tailwind + shadcn | Moderno, acessível |
+| Auth | Supabase | Simplifica auth |
+| Database | Supabase PostgreSQL | Gratuito, escalável |
+| ORM | Prisma | Type-safe, migrations |
+| PDF | HTML → Print | Simples, sem dependências |
+
+---
+
+## 📅 Timeline do MVP
+
+### Semana 1-2: Setup ✅
+- Next.js + TypeScript
+- Supabase + Prisma
+- Auth funcionando
+
+### Semana 3-4: CRUD ✅
+- Cadastro de clientes
+- Dashboard
+- Formulário 4 etapas
+
+### Semana 5-6: Motor Fiscal ✅
+- Cálculos Simples/Presumido/Real
+- Banco legislativo
+- Digital Twin
+
+### Semana 7-8: Análise e PDF ✅
+- Score Fiscal
+- Simulações
+- Geração de PDF
+
+### Semana 9: Refinamentos (ATUAL)
+- Correção de anexos por tipo
+- ISS dinâmico por município
+- Testes finais
+
+---
+
+## 🚀 Próximos Passos Pós-MVP
+
+1. **Coleta de Feedback**
+   - Usuários beta testam
+   - Formulário de NPS
+   - Entrevistas qualitativas
+
+2. **Iterações Rápidas**
+   - Corrigir bugs
+   - Melhorar UX
+   - Adicionar features mais pedidas
+
+3. **Preparação para Escala**
+   - Otimizar performance
+   - Adicionar cache
+   - Monitoramento
+
+---
+
+## 📋 Checklist de Lançamento
+
+### Técnico
+- [x] Autenticação funcionando
+- [x] CRUD de clientes
+- [x] Motor fiscal calculando corretamente
+- [x] PDF gerando sem erros
+- [ ] Testes automatizados (pendente)
+- [ ] CI/CD configurado (pendente)
+
+### Produto
+- [x] Landing page
+- [x] Onboarding básico
+- [ ] FAQ/Help (pendente)
+- [ ] Termos de uso (pendente)
+- [ ] Política de privacidade (pendente)
+
+### Go-to-Market
+- [ ] Nome de domínio (pendente)
+- [ ] Conta de email suporte (pendente)
+- [ ] Lista de beta testers (pendente)
+- [ ] Material de divulgação (pendente)

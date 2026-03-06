@@ -1,83 +1,206 @@
-# Roadmap de Desenvolvimento
+# FiscalOS - Roadmap
 
-## 🗺️ Visão Geral
+## 🗺️ Visão Geral do Produto
 
-Este roadmap define a trajetória do FiscalOS desde a concepção até a versão estável e escalável.
-
----
-
-## 📅 Fase 1: MVP (A Fundação) - *Atual*
-**Foco:** Validação da dor e funcionalidade core.
-**Prazo Estimado:** 2-3 Semanas
-
-- [ ] **Setup Inicial**
-  - [ ] Repositório e ambiente Next.js
-  - [ ] Banco de dados Supabase
-  - [ ] Autenticação básica
-- [ ] **Core Fiscal**
-  - [ ] Tabelas do Simples Nacional (Anexos I a V)
-  - [ ] Tabelas do Lucro Presumido
-  - [ ] Lógica do Fator R
-- [ ] **Interface**
-  - [ ] Dashboard simples
-  - [ ] Formulário de cadastro de cliente
-  - [ ] Tela de resultados comparativos
-- [ ] **Entregável**
-  - [ ] Geração de PDF básico
+O FiscalOS está em desenvolvimento ativo. Este roadmap mostra o que já foi entregue, o que está em desenvolvimento e o que está planejado.
 
 ---
 
-## 📅 Fase 2: Refinamento & Venda (V1.0)
-**Foco:** Monetização e usabilidade.
-**Prazo Estimado:** +3 Semanas após MVP
+## ✅ Fase 1 - MVP (CONCLUÍDA)
 
-- [ ] **Pagamentos**
-  - [ ] Integração com Stripe
-  - [ ] Planos de assinatura (Mensal/Anual)
-  - [ ] Bloqueio de features para free tier
-- [ ] **Melhorias de Produto**
-  - [ ] Upload de logo do contador (Whitelabel básico)
-  - [ ] Salvar simulações históricas
-  - [ ] Edição de alíquotas de ISS/ICMS (para precisão local)
-- [ ] **Marketing**
-  - [ ] Landing Page de conversão
-  - [ ] Blog para SEO (conteúdo tributário)
+**Período:** Janeiro - Março 2026
+**Status:** ✅ Entregue
 
----
+### Funcionalidades Entregues
 
-## 📅 Fase 3: Expansão & Automação (V2.0)
-**Foco:** Escala e redução de atrito.
-**Prazo Estimado:** +2 Meses
+| Feature | Status | Descrição |
+|---------|--------|-----------|
+| Autenticação | ✅ | Login/Cadastro com Supabase Auth |
+| CRUD de Clientes | ✅ | Cadastrar, listar, visualizar, excluir |
+| Motor Fiscal V2 | ✅ | Simples, Presumido, Real com dados do banco |
+| Digital Twin | ✅ | Simulação de 180+ cenários |
+| Score Fiscal | ✅ | Índice 0-100 com classificação |
+| Relatórios PDF | ✅ | Geração de relatório consultivo |
+| Banco Legislativo | ✅ | 30 faixas Simples, 13 CNAEs, 12 ISS |
+| Seleção de Município | ✅ | ISS por município brasileiro |
+| Fator R Automático | ✅ | Análise de anexo correto |
 
-- [ ] **Integrações**
-  - [ ] Importação de planilhas Excel/CSV
-  - [ ] Busca de dados por CNPJ (API pública)
-- [ ] **Motor Fiscal Avançado**
-  - [ ] Suporte preliminar ao Lucro Real (estimado)
-  - [ ] Análise de CNAEs concomitantes (Múltiplas atividades)
-- [ ] **Gestão**
-  - [ ] Dashboard gerencial para escritórios (visão do dono)
-  - [ ] Múltiplos usuários por conta (Times)
+### Arquivos Principais
+
+```
+lib/fiscal-engine-v2.ts    → Motor de cálculo
+lib/digital-twin.ts        → Simulações
+prisma/seed.ts             → Dados legislativos
+app/api/pdf/[id]/route.ts  → Geração de PDF
+```
 
 ---
 
-## 📅 Fase 4: Ecossistema (Longo Prazo)
-**Foco:** Domínio de mercado.
+## 🚧 Fase 2 - Aprimoramentos (EM DESENVOLVIMENTO)
 
-- [ ] **Monitoramento Contínuo**
-  - [ ] Alertas mensais de reenquadramento
-- [ ] **IA Tributária**
-  - [ ] Chatbot para dúvidas fiscais simples (RAG com legislação)
-- [ ] **Marketplace**
-  - [ ] Conexão com advogados tributaristas para casos complexos
+**Período:** Março - Abril 2026
+**Status:** 🚧 Em desenvolvimento
+
+### Funcionalidades Planejadas
+
+| Feature | Prioridade | Status | Descrição |
+|---------|------------|--------|-----------|
+| Edição de Clientes | 🔴 Alta | ⏳ | Editar dados cadastrais |
+| Dashboard Comparativo | 🔴 Alta | ⏳ | Ranking de clientes por economia |
+| Mais CNAEs | 🟡 Média | ⏳ | Expandir de 13 para 50+ CNAEs |
+| Análise Fator R Detalhada | 🟡 Média | ⏳ | ROI de aumentar pró-labore |
+| Histórico de Simulações | 🟡 Média | ⏳ | Salvar e comparar simulações |
+| Exportação Excel | 🟢 Baixa | ⏳ | Baixar dados em planilha |
 
 ---
 
-## 🚦 Status Atual
+## 🎯 Fase 3 - Crescimento (PLANEJADO)
 
-| Fase | Status |
-|------|--------|
-| **1. MVP** | 🟡 Em Planejamento/Execução |
-| **2. V1.0** | ⚪ Aguardando |
-| **3. V2.0** | ⚪ Aguardando |
-| **4. Futuro** | ⚪ Aguardando |
+**Período:** Maio - Julho 2026
+**Status:** 📋 Planejado
+
+### Funcionalidades Planejadas
+
+| Feature | Prioridade | Descrição |
+|---------|------------|-----------|
+| Planos Pagos | 🔴 Alta | FREE, PRO, AGENCY com limites |
+| Múltiplos Usuários | 🔴 Alta | Time de contadores no mesmo escritório |
+| API Pública | 🟡 Média | Integração com sistemas de contabilidade |
+| Webhooks | 🟡 Média | Notificações para sistemas externos |
+| Templates de Relatório | 🟡 Média | Personalizar marca do escritório |
+| Alertas Automáticos | 🟢 Baixa | Avisar quando cliente pode economizar |
+
+---
+
+## 🚀 Fase 4 - Escala (FUTURO)
+
+**Período:** Agosto - Dezembro 2026
+**Status:** 🔮 Visão futura
+
+### Funcionalidades Planejadas
+
+| Feature | Descrição |
+|---------|-----------|
+| App Mobile | iOS/Android para contadores em campo |
+| IA Tributária | Recomendações personalizadas com ML |
+| Integração Contabilidade | Conectar com Domínio Sistemas, ContaAzul |
+| Marketplace | Contadores oferecem serviços no FiscalOS |
+| Certificado Digital | Validação automática de dados |
+| WhatsApp Bot | Consultas rápidas via chat |
+
+---
+
+## 📊 Priorização
+
+### Framework de Decisão
+
+```
+Impacto
+   ↑
+   │  ┌─────────────┐
+   │  │ Dashboard   │
+   │  │ Comparativo │
+   │  └─────────────┘
+   │         │
+   │  ┌──────┴──────┐
+   │  │  Edição de  │
+   │  │  Clientes   │
+   │  └─────────────┘
+   │
+   └────────────────────────→ Esforço
+         Baixo        Alto
+```
+
+### Critérios de Priorização
+
+1. **Valor para o usuário:** Resolve dor real?
+2. **Diferenciação:** Nos destaca da concorrência?
+3. **Viabilidade técnica:** Conseguimos implementar?
+4. **Retorno:** Gera receita ou retém usuários?
+
+---
+
+## 🎯 Metas por Trimestre
+
+### Q1 2026 (Jan-Mar) ✅
+- [x] MVP funcional
+- [x] 10 usuários beta
+- [x] Feedback inicial coletado
+
+### Q2 2026 (Abr-Jun)
+- [ ] Edição de clientes
+- [ ] Dashboard comparativo
+- [ ] 100 usuários ativos
+- [ ] Primeiras assinaturas pagas
+
+### Q3 2026 (Jul-Set)
+- [ ] API pública
+- [ ] Integrações
+- [ ] 500 usuários ativos
+- [ ] R$ 10k MRR
+
+### Q4 2026 (Out-Dez)
+- [ ] App mobile
+- [ ] IA tributária
+- [ ] 2000 usuários ativos
+- [ ] R$ 50k MRR
+
+---
+
+## 🔄 Processo de Desenvolvimento
+
+### Metodologia: Kanban
+
+```
+┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+│   BACKLOG   │─→│  DESENVOLV. │─→│   TESTE     │─→│   PRONTO    │
+└─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘
+     │                 │                │                │
+   Ideias          Codificando       Validando       Entregue
+```
+
+### Ciclo de Release
+
+1. **Planejamento** (Segunda)
+2. **Desenvolvimento** (Segunda-Quinta)
+3. **Testes** (Sexta)
+4. **Deploy** (Sexta à noite)
+5. **Monitoramento** (Sábado)
+
+---
+
+## 📝 Como Contribuir
+
+### Reportar Bugs
+
+1. Abra uma issue no GitHub
+2. Descreva o problema
+3. Inclua prints/screenshots
+4. Informe seu navegador e dispositivo
+
+### Sugerir Features
+
+1. Abra uma discussão no GitHub
+2. Explique o problema que resolve
+3. Descreva a solução proposta
+4. Aguarde feedback da comunidade
+
+---
+
+## 🗓️ Próximos Passos (Sprint Atual)
+
+**Semana atual:**
+
+| Tarefa | Status |
+|--------|--------|
+| Corrigir anexos por tipo de atividade | ✅ Feito |
+| Adicionar seleção de município | ✅ Feito |
+| Atualizar documentação | 🚧 Em progresso |
+| Testar com 3 cenários | ⏳ Pendente |
+| Implementar edição de clientes | ⏳ Pendente |
+
+**Próxima sprint:**
+
+- [ ] Dashboard comparativo
+- [ ] Histórico de simulações
+- [ ] Expandir CNAEs
