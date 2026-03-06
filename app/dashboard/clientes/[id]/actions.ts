@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 
-export async function updateClientAction(clientId: string, formData: FormData) {
+export async function updateClientAction(clientId: string, formData: FormData): Promise<void> {
   const user = await getUser()
   
   if (!user) {
@@ -35,13 +35,13 @@ export async function updateClientAction(clientId: string, formData: FormData) {
     revalidatePath('/dashboard')
   } catch (error) {
     console.error('Error updating client:', error)
-    return { error: 'Erro ao atualizar cliente' }
+    throw new Error('Erro ao atualizar cliente')
   }
 
   redirect(`/dashboard/clientes/${clientId}`)
 }
 
-export async function deleteClientAction(clientId: string) {
+export async function deleteClientAction(clientId: string): Promise<void> {
   const user = await getUser()
   
   if (!user) {
@@ -56,7 +56,7 @@ export async function deleteClientAction(clientId: string) {
     revalidatePath('/dashboard')
   } catch (error) {
     console.error('Error deleting client:', error)
-    return { error: 'Erro ao excluir cliente' }
+    throw new Error('Erro ao excluir cliente')
   }
   
   redirect('/dashboard')
