@@ -47,7 +47,8 @@ export async function GET(
         aluguel: Number(client.rentExpense || 0),
         fornecedores: Number(client.supplierExpense || 0),
         marketing: Number(client.marketingExpense || 0),
-        administrativo: Number(client.adminExpense || 0)
+        administrativo: Number(client.adminExpense || 0),
+        total: Number(client.payrollLast12m) + Number(client.rentExpense || 0) + Number(client.supplierExpense || 0) + Number(client.marketingExpense || 0) + Number(client.adminExpense || 0)
       },
       trabalhista: {
         funcionarios: client.employeesCount,
