@@ -59,7 +59,8 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
       aluguel: Number(client.rentExpense || 0),
       fornecedores: Number(client.supplierExpense || 0),
       marketing: Number(client.marketingExpense || 0),
-      administrativo: Number(client.adminExpense || 0)
+      administrativo: Number(client.adminExpense || 0),
+      total: Number(client.payrollLast12m) + Number(client.rentExpense || 0) + Number(client.supplierExpense || 0) + Number(client.marketingExpense || 0) + Number(client.adminExpense || 0)
     },
     trabalhista: {
       funcionarios: client.employeesCount,
@@ -81,7 +82,8 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
       cofins: Number(client.currentCOFINS || 0),
       iss: Number(client.currentISS || 0),
       icms: Number(client.currentICMS || 0),
-      inss: Number(client.currentINSS || 0)
+      inss: Number(client.currentINSS || 0),
+      total: Number(client.currentDAS || 0) + Number(client.currentIRPJ || 0) + Number(client.currentCSLL || 0) + Number(client.currentPIS || 0) + Number(client.currentCOFINS || 0) + Number(client.currentISS || 0) + Number(client.currentICMS || 0) + Number(client.currentINSS || 0)
     }
   })
 
