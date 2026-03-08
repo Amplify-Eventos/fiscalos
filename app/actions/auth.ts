@@ -10,6 +10,9 @@ export async function signUp(formData: FormData) {
   const password = formData.get('password') as string
   const name = formData.get('name') as string
 
+  // Debug: verificar se as variáveis estão configuradas
+  console.log('🔍 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'OK' : 'MISSING')
+  console.log('🔍 Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'OK' : 'MISSING')
   console.log('🔄 Tentando criar conta:', { email, name })
 
   const { data, error } = await supabase.auth.signUp({
@@ -39,6 +42,9 @@ export async function signIn(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
+  // Debug: verificar se as variáveis estão configuradas
+  console.log('🔍 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'OK' : 'MISSING')
+  console.log('🔍 Supabase Key:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'OK' : 'MISSING')
   console.log('🔄 Tentando login:', { email })
 
   const { data, error } = await supabase.auth.signInWithPassword({
