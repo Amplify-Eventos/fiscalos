@@ -88,10 +88,8 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
 
   // Rodar diagnóstico para obter score
   let diagnostico = null
-  let recomendacoes = []
   try {
     diagnostico = await digitalTwin.gerarDiagnostico()
-    recomendacoes = diagnostico.recomendacoes || []
   } catch (e) {
     console.error('Erro ao gerar diagnóstico:', e)
   }
@@ -280,21 +278,39 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
           </Card>
         )}
 
-        {/* Recomendações */}
-        {recomendacoes && recomendacoes.length > 0 && (
+        {/* Problemas e Oportunidades */}
+        {diagnostico && (diagnostico.problemasDetectados.length > 0 || diagnostico.oportunidadesIdentificadas.length > 0) && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="text-lg">Recomendações</CardTitle>
+              <CardTitle className="text-lg">Análise Fiscal</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2">
-                {recomendacoes.slice(0, 5).map((rec: string, idx: number) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm">
-                    <span className="text-blue-600 mt-1">•</span>
-                    <span className="text-slate-700">{rec}</span>
-                  </li>
-                ))}
-              </ul>
+              {diagnostico.problemasDetectados.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-sm font-medium text-red-600 mb-2">Pontos de Atenção:</p>
+                  <ul className="space-y-1">
+                    {diagnostico.problemasDetectados.map((problema: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-slate-700">
+                        <span className="text-red-500">⚠</span>
+                        {problema}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {diagnostico.oportunidadesIdentificadas.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-green-600 mb-2">Oportunidades:</p>
+                  <ul className="space-y-1">
+                    {diagnostico.oportunidadesIdentificadas.map((oportunidade: string, idx: number) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm text-slate-700">
+                        <span className="text-green-500">✓</span>
+                        {oportunidade}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
