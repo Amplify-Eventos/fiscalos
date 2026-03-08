@@ -6,13 +6,32 @@ import { signOut, getUser } from "@/app/actions/auth"
 import { prisma } from "@/lib/prisma"
 
 export default async function DashboardPage() {
-  const user = await getUser()
+  let user
+  let clients: any[] = []
+  let error = null
+
+  try {
+    user = await getUser()
+    console.log('🔍 User:', user?.id, user?.email)
+  } catch (e) {
+    console.error('❌ Erro ao obter usuário:', e)
+    error = 'Erro ao verificar autenticação'
+  }
 
   // Buscar clientes do banco
-  const clients = user ? await prisma.client.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: 'desc' }
-  }) : []
+  if (user) {
+    try {
+      console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 'OK' : 'MISSING')
+      clients = await prisma.client.findMany({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' }
+      })
+      console.log('✅ Clientes encontrados:', clients.length)
+    } catch (e) {
+      console.error('❌ Erro ao buscar clientes:', e)
+      error = 'Erro ao conectar com o banco de dados'
+    }
+  }
 
   const totalClients = clients.length
 
@@ -38,6 +57,13 @@ export default async function DashboardPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+            <strong>Erro:</strong> {error}
+          </div>
+        )}
+        
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
