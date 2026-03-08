@@ -86,8 +86,9 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
       pis: Number(client.currentPIS || 0),
       cofins: Number(client.currentCOFINS || 0),
       iss: Number(client.currentISS || 0),
+      icms: Number(client.currentICMS || 0),
       inss: Number(client.currentINSS || 0),
-      total: Number(client.currentDAS || 0) + Number(client.currentIRPJ || 0) + Number(client.currentCSLL || 0) + Number(client.currentPIS || 0) + Number(client.currentCOFINS || 0) + Number(client.currentISS || 0) + Number(client.currentINSS || 0)
+      total: Number(client.currentDAS || 0) + Number(client.currentIRPJ || 0) + Number(client.currentCSLL || 0) + Number(client.currentPIS || 0) + Number(client.currentCOFINS || 0) + Number(client.currentISS || 0) + Number(client.currentICMS || 0) + Number(client.currentINSS || 0)
     }
   })
 
