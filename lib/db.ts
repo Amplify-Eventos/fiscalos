@@ -1,7 +1,7 @@
 // Cliente Supabase para operações de banco de dados
 // Usa a API REST do Supabase para evitar problemas de conexão direta
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -10,7 +10,7 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Variáveis do Supabase não configuradas')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey, {
+export const supabase = createSupabaseClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: false,
   },
@@ -81,7 +81,7 @@ export async function getClient(clientId: string, userId: string) {
   return data as ClientDB
 }
 
-export async function createClient(client: Partial<ClientDB>) {
+export async function createClientRecord(client: Partial<ClientDB>) {
   const { data, error } = await supabase
     .from('clients')
     .insert(client)
@@ -92,7 +92,7 @@ export async function createClient(client: Partial<ClientDB>) {
   return data as ClientDB
 }
 
-export async function updateClient(clientId: string, userId: string, updates: Partial<ClientDB>) {
+export async function updateClientRecord(clientId: string, userId: string, updates: Partial<ClientDB>) {
   const { data, error } = await supabase
     .from('clients')
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -105,7 +105,7 @@ export async function updateClient(clientId: string, userId: string, updates: Pa
   return data as ClientDB
 }
 
-export async function deleteClient(clientId: string, userId: string) {
+export async function deleteClientRecord(clientId: string, userId: string) {
   const { error } = await supabase
     .from('clients')
     .delete()
