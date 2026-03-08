@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calculator, Users, FileText, Plus, TrendingUp } from "lucide-react"
 import { signOut, getUser } from "@/app/actions/auth"
-import { prisma } from "@/lib/prisma"
+import { createClient } from "@/lib/supabase/server"
 
 export default async function DashboardPage() {
   let user
@@ -12,24 +12,29 @@ export default async function DashboardPage() {
 
   try {
     user = await getUser()
-    console.log('🔍 User:', user?.id, user?.email)
+    console.log('🔍 User:', user?.id)
   } catch (e) {
     console.error('❌ Erro ao obter usuário:', e)
     error = 'Erro ao verificar autenticação'
   }
 
-  // Buscar clientes do banco
+  // Buscar clientes via Supabase REST API
   if (user) {
     try {
-      console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 'OK' : 'MISSING')
-      clients = await prisma.client.findMany({
-        where: { userId: user.id },
-        orderBy: { createdAt: 'desc' }
-      })
+      const supabase = await createClient()
+      const { data, error: dbError } = await supabase
+        .from('Client')
+        .select('*')
+        .eq('userId', user.id)
+        .order('createdAt', { ascending: false })
+      
+      if (dbError) throw dbError
+      
+      clients = data || []
       console.log('✅ Clientes encontrados:', clients.length)
-    } catch (e) {
+    } catch (e: any) {
       console.error('❌ Erro ao buscar clientes:', e)
-      error = 'Erro ao conectar com o banco de dados'
+      error = `Erro ao conectar: ${e.message}`
     }
   }
 
@@ -87,82 +92,86 @@ export default async function DashboardPage() {
               <Users className="h-5 w-5 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-900">{totalClients}</div>
-              <p className="text-xs text-slate-500 mt-1">Cadastrados no sistema</p>
+              <p className="text-3xl font-bold text-slate-900">{totalClients}</p>
+              <p className="text-xs text-slate-500">empresas cadastradas</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-slate-600">
-                Planejamentos Gerados
+                Planejamentos Realizados
               </CardTitle>
               <FileText className="h-5 w-5 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-900">0</div>
-              <p className="text-xs text-slate-500 mt-1">Este mês</p>
+              <p className="text-3xl font-bold text-slate-900">
+                {clients.filter(c => c.currentDAS || c.currentIRPJ).length}
+              </p>
+              <p className="text-xs text-slate-500">simulações concluídas</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-slate-600">
-                Economia Gerada
+                Economia Potencial
               </CardTitle>
               <TrendingUp className="h-5 w-5 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-900">R$ 0</div>
-              <p className="text-xs text-slate-500 mt-1">Para seus clientes</p>
+              <p className="text-3xl font-bold text-slate-900">
+                R$ 0
+              </p>
+              <p className="text-xs text-slate-500">em economia identificada</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Lista de Clientes ou Empty State */}
-        {totalClients === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                <Users className="h-8 w-8 text-slate-400" />
+        {/* Clients List */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Seus Clientes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {clients.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 mb-4">Nenhum cliente cadastrado ainda</p>
+                <Link href="/dashboard/clientes/novo">
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Primeiro Cliente
+                  </Button>
+                </Link>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                Nenhum cliente cadastrado
-              </h3>
-              <p className="text-slate-600 text-center max-w-sm mb-6">
-                Comece cadastrando seu primeiro cliente para gerar um planejamento fiscal automaticamente.
-              </p>
-              <Link href="/dashboard/clientes/novo">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Cadastrar Primeiro Cliente
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-slate-900">Seus Clientes</h2>
-            <div className="grid gap-4">
-              {clients.map((client) => (
-                <Card key={client.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="flex items-center justify-between py-4">
+            ) : (
+              <div className="space-y-4">
+                {clients.map((client) => (
+                  <div
+                    key={client.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-slate-50 transition-colors"
+                  >
                     <div>
-                      <h3 className="font-semibold text-slate-900">{client.companyName}</h3>
-                      <p className="text-sm text-slate-600">CNPJ: {client.cnpj}</p>
-                      <p className="text-xs text-slate-500">
-                        Faturamento: R$ {Number(client.revenueLast12m).toLocaleString('pt-BR')}
+                      <h3 className="font-medium text-slate-900">{client.companyName}</h3>
+                      <p className="text-sm text-slate-500">
+                        CNPJ: {client.cnpj} • CNAE: {client.cnaeMain}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Faturamento: R$ {(client.revenueLast12m || 0).toLocaleString('pt-BR')}
                       </p>
                     </div>
                     <Link href={`/dashboard/clientes/${client.id}`}>
-                      <Button variant="outline">Ver Detalhes</Button>
+                      <Button variant="outline" size="sm">
+                        Ver Detalhes
+                      </Button>
                     </Link>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
   )

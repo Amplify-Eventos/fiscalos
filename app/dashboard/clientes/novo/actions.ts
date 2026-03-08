@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
 
 export async function createClientAction(formData: FormData) {
   const supabase = await createClient()
@@ -63,38 +62,49 @@ export async function createClientAction(formData: FormData) {
   let clientId = ''
 
   try {
-    // Garantir que usuário existe no Prisma
-    const dbUser = await prisma.user.upsert({
-      where: { id: user.id },
-      update: {},
-      create: {
-        id: user.id,
-        email: user.email!,
-        name: user.user_metadata?.name || 'Usuário',
-      },
-    })
+    // Garantir que usuário existe
+    const { data: existingUser } = await supabase
+      .from('User')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+    
+    if (!existingUser) {
+      await supabase
+        .from('User')
+        .insert({
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.name || 'Usuário',
+          planTier: 'FREE',
+        })
+    }
 
     // Buscar dados do município selecionado
-    const municipioData = await prisma.issRate.findUnique({
-      where: { ibgeCode: municipioIBGE }
-    })
+    const { data: municipioData } = await supabase
+      .from('IssRate')
+      .select('cityName, stateCode')
+      .eq('ibgeCode', municipioIBGE)
+      .single()
 
-    const client = await prisma.client.create({
-      data: {
-        userId: dbUser.id,
+    // Criar cliente usando Supabase REST API
+    const { data: client, error } = await supabase
+      .from('Client')
+      .insert({
+        userId: user.id,
         // Dados Jurídicos
         companyName,
         cnpj,
         fantasyName,
-        legalNature: legalNature as any,
-        companySize: companySize as any,
-        taxRegime: taxRegime as any,
+        legalNature,
+        companySize,
+        taxRegime,
         simplesOpt,
         // Atividade
         cnaeMain,
         cnaeSecondary,
         activityDesc,
-        revenueType: revenueType as any,
+        revenueType,
         // Localização
         municipioIBGE,
         municipio: municipioData?.cityName || null,
@@ -126,9 +136,13 @@ export async function createClientAction(formData: FormData) {
         currentCOFINS,
         currentISS,
         currentINSS,
-      },
-    })
-    
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .select('id')
+      .single()
+
+    if (error) throw error
     clientId = client.id
 
   } catch (error) {

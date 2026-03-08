@@ -1,7 +1,6 @@
-// FiscalOS PDF Generator - Build v2
+// FiscalOS PDF Generator - Build v3
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { prisma } from '@/lib/prisma'
 import { criarDigitalTwin } from '@/lib/digital-twin'
 
 export async function GET(
@@ -18,11 +17,14 @@ export async function GET(
 
     const { id } = await params
 
-    const client = await prisma.client.findUnique({
-      where: { id, userId: user.id }
-    })
+    const { data: client, error: clientError } = await supabase
+      .from('Client')
+      .select('*')
+      .eq('id', id)
+      .eq('userId', user.id)
+      .single()
 
-    if (!client) {
+    if (clientError || !client) {
       return NextResponse.json({ error: 'Client not found' }, { status: 404 })
     }
 
@@ -58,9 +60,9 @@ export async function GET(
         beneficios: Number(client.benefits || 0)
       },
       localizacao: {
-        municipio: '',
-        uf: '',
-        municipioIBGE: '3550308', // Default SP
+        municipio: client.municipio || '',
+        uf: client.uf || '',
+        municipioIBGE: client.municipioIBGE || '3550308',
         issAliquota: 0.05
       },
       fiscalAtual: {

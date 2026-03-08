@@ -1,8 +1,8 @@
 'use server'
 
 import { getUser } from "@/app/actions/auth"
+import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 
 export async function updateClientAction(clientId: string, formData: FormData): Promise<void> {
@@ -20,17 +20,23 @@ export async function updateClientAction(clientId: string, formData: FormData): 
   const payrollLast12m = parseFloat(formData.get('payrollLast12m') as string) || 0
 
   try {
-    await prisma.client.update({
-      where: { id: clientId, userId: user.id },
-      data: {
+    const supabase = await createClient()
+    
+    const { error } = await supabase
+      .from('Client')
+      .update({
         companyName,
         cnpj,
         cnaeMain,
         employeesCount,
         revenueLast12m,
         payrollLast12m,
-      },
-    })
+        updatedAt: new Date().toISOString(),
+      })
+      .eq('id', clientId)
+      .eq('userId', user.id)
+
+    if (error) throw error
 
     revalidatePath('/dashboard')
   } catch (error) {
@@ -49,9 +55,15 @@ export async function deleteClientAction(clientId: string): Promise<void> {
   }
 
   try {
-    await prisma.client.delete({
-      where: { id: clientId, userId: user.id },
-    })
+    const supabase = await createClient()
+    
+    const { error } = await supabase
+      .from('Client')
+      .delete()
+      .eq('id', clientId)
+      .eq('userId', user.id)
+
+    if (error) throw error
 
     revalidatePath('/dashboard')
   } catch (error) {

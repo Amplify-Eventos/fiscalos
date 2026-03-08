@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,15 +12,15 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
 
-    const client = await prisma.client.create({
-      data: {
+    const { data: client, error } = await supabase
+      .from('Client')
+      .insert({
         userId: user.id,
         
         // Dados Jurídicos
         cnpj: body.cnpj,
         companyName: body.companyName,
         fantasyName: body.fantasyName || null,
-        openingDate: body.openingDate ? new Date(body.openingDate) : null,
         legalNature: body.legalNature || 'LTDA',
         companySize: body.companySize || 'ME',
         taxRegime: body.taxRegime || 'SIMPLES_NACIONAL',
@@ -66,8 +65,14 @@ export async function POST(request: NextRequest) {
         currentCOFINS: body.currentCOFINS ? parseFloat(body.currentCOFINS) : null,
         currentISS: body.currentISS ? parseFloat(body.currentISS) : null,
         currentINSS: body.currentINSS ? parseFloat(body.currentINSS) : null,
-      },
-    })
+        
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (error) throw error
 
     return NextResponse.json(client)
   } catch (error) {
