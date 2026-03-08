@@ -8,13 +8,7 @@ import {
   TrendingUp, 
   FileText, 
   Edit, 
-  Trash2,
-  AlertTriangle,
-  Lightbulb,
-  Target,
-  BarChart3,
-  CheckCircle,
-  XCircle
+  Trash2
 } from "lucide-react"
 import { getUser } from "@/app/actions/auth"
 import { createClient } from "@/lib/supabase/server"
@@ -92,6 +86,16 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
     }
   })
 
+  // Rodar diagnóstico para obter score
+  let diagnostico = null
+  let recomendacoes = []
+  try {
+    diagnostico = await digitalTwin.gerarDiagnostico()
+    recomendacoes = diagnostico.recomendacoes || []
+  } catch (e) {
+    console.error('Erro ao gerar diagnóstico:', e)
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -138,21 +142,19 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
         </div>
 
         {/* Score Card */}
-        {digitalTwin.scoreFiscal && (
+        {diagnostico && (
           <Card className="mb-6 border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-white">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Score Fiscal</p>
-                  <p className="text-5xl font-bold text-blue-600">{digitalTwin.scoreFiscal}</p>
+                  <p className="text-5xl font-bold text-blue-600">{diagnostico.score.score}</p>
                   <p className="text-xs text-slate-500 mt-1">de 100 pontos</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-slate-600">Eficiência Tributária</p>
+                  <p className="text-sm text-slate-600">Classificação</p>
                   <p className="text-2xl font-semibold text-slate-900">
-                    {digitalTwin.scoreFiscal >= 80 ? 'Excelente' : 
-                     digitalTwin.scoreFiscal >= 60 ? 'Boa' : 
-                     digitalTwin.scoreFiscal >= 40 ? 'Regular' : 'Atenção'}
+                    {diagnostico.score.classificacao}
                   </p>
                 </div>
               </div>
@@ -278,45 +280,28 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
           </Card>
         )}
 
-        {/* Análise do Motor Fiscal */}
-        {digitalTwin.recomendacoes && digitalTwin.recomendacoes.length > 0 && (
+        {/* Recomendações */}
+        {recomendacoes && recomendacoes.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-yellow-500" />
-                Recomendações Estratégicas
-              </CardTitle>
+              <CardTitle className="text-lg">Recomendações</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {digitalTwin.recomendacoes.map((rec: any, idx: number) => (
-                <div key={idx} className={`p-4 rounded-lg ${rec.tipo === 'alerta' ? 'bg-red-50 border border-red-200' : rec.tipo === 'oportunidade' ? 'bg-green-50 border border-green-200' : 'bg-blue-50 border border-blue-200'}`}>
-                  <div className="flex items-start gap-3">
-                    {rec.tipo === 'alerta' ? (
-                      <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
-                    ) : rec.tipo === 'oportunidade' ? (
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5" />
-                    ) : (
-                      <Target className="h-5 w-5 text-blue-500 mt-0.5" />
-                    )}
-                    <div>
-                      <p className="font-medium text-slate-900">{rec.titulo}</p>
-                      <p className="text-sm text-slate-600 mt-1">{rec.descricao}</p>
-                      {rec.economiaEstimada && (
-                        <p className="text-sm font-medium text-green-600 mt-2">
-                          Economia estimada: R$ {rec.economiaEstimada.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}/ano
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <CardContent>
+              <ul className="space-y-2">
+                {recomendacoes.slice(0, 5).map((rec: string, idx: number) => (
+                  <li key={idx} className="flex items-start gap-2 text-sm">
+                    <span className="text-blue-600 mt-1">•</span>
+                    <span className="text-slate-700">{rec}</span>
+                  </li>
+                ))}
+              </ul>
             </CardContent>
           </Card>
         )}
 
         {/* Ações */}
         <div className="flex gap-4">
-          <Link href={`/dashboard/clientes/${client.id}/relatorio`}>
+          <Link href={`/api/pdf/${client.id}`}>
             <Button>
               <FileText className="h-4 w-4 mr-2" />
               Gerar Relatório PDF
