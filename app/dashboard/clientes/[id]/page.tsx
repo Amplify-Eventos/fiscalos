@@ -10,7 +10,9 @@ import {
   Edit, 
   Trash2,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  PieChart,
+  AlertCircle
 } from "lucide-react"
 import { getUser } from "@/app/actions/auth"
 import { createClient } from "@/lib/supabase/server"
@@ -117,6 +119,14 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
     ? simulacoes[0].economiaVsAtual 
     : 0
 
+  const revenue12m = Number(client.revenueLast12m || 0)
+  const payroll12m = Number(client.payrollLast12m || 0)
+  const fatorR = revenue12m > 0 ? (payroll12m / revenue12m) * 100 : 0
+  
+  const sublimiteSimples = 3600000
+  const isAbaixoSublimite = revenue12m < sublimiteSimples
+  const porcentagemSublimite = revenue12m > 0 ? Math.min((revenue12m / sublimiteSimples) * 100, 100) : 0
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white border-b sticky top-0 z-50">
@@ -158,16 +168,16 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
           </div>
         </div>
 
-        {/* Dashboard Cards Resumo */}
-        <div className="grid md:grid-cols-3 gap-6 mb-6">
+                {/* Dashboard Cards Resumo */}
+        <div className="grid md:grid-cols-4 gap-4 mb-6">
           {diagnostico && (
             <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
               <CardContent className="pt-6">
                 <div className="flex flex-col h-full justify-between">
                   <div>
                     <p className="text-sm font-medium text-slate-600 mb-1">Score Fiscal</p>
-                    <p className="text-5xl font-bold text-blue-600">{diagnostico.score.score}</p>
-                    <p className="text-xs text-slate-500 mt-1">Classificação: <span className="font-semibold text-slate-800">{diagnostico.score.classificacao}</span></p>
+                    <p className="text-4xl font-bold text-blue-600">{diagnostico.score.score}</p>
+                    <p className="text-xs text-slate-500 mt-1">Status: <span className="font-semibold text-slate-800">{diagnostico.score.classificacao}</span></p>
                   </div>
                 </div>
               </CardContent>
@@ -176,24 +186,79 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
 
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm font-medium text-slate-600 mb-1">Imposto Anual Atual</p>
-              <p className="text-3xl font-bold text-red-500">
-                {currentTotalTax > 0 ? `R$ ${currentTotalTax.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : 'Não informado'}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">Carga de {currentTotalTax > 0 && Number(client.revenueLast12m) > 0 ? ((currentTotalTax / Number(client.revenueLast12m)) * 100).toFixed(1) : 0}%</p>
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-slate-600 mb-1">Imposto Atual</p>
+                  <p className="text-2xl font-bold text-red-500">
+                    {currentTotalTax > 0 ? `R$ ${currentTotalTax.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : 'Não info'}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">Carga: {currentTotalTax > 0 && revenue12m > 0 ? ((currentTotalTax / revenue12m) * 100).toFixed(1) : 0}%</p>
+                </div>
+                <PieChart className="h-5 w-5 text-slate-400" />
+              </div>
+              {/* Memória de Cálculo Simplificada */}
+              <div className="mt-3 text-xs space-y-1 pt-3 border-t">
+                {Number(client.currentDAS || 0) > 0 && <div className="flex justify-between"><span className="text-slate-500">DAS</span><span className="font-medium">R$ {Number(client.currentDAS).toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></div>}
+                {Number(client.currentIRPJ || 0) > 0 && <div className="flex justify-between"><span className="text-slate-500">IRPJ/CSLL</span><span className="font-medium">R$ {(Number(client.currentIRPJ)+Number(client.currentCSLL)).toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></div>}
+                {Number(client.currentPIS || 0) > 0 && <div className="flex justify-between"><span className="text-slate-500">PIS/COFINS</span><span className="font-medium">R$ {(Number(client.currentPIS)+Number(client.currentCOFINS)).toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></div>}
+                {Number(client.currentISS || 0) > 0 && <div className="flex justify-between"><span className="text-slate-500">ISS</span><span className="font-medium">R$ {Number(client.currentISS).toLocaleString('pt-BR', {maximumFractionDigits:0})}</span></div>}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-slate-600 mb-1">Fator R (Serviços)</p>
+                  <p className="text-2xl font-bold text-slate-800">{fatorR.toFixed(1)}%</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {fatorR >= 28 ? <span className="text-green-600 font-medium">Anexo III (Seguro)</span> : <span className="text-red-500 font-medium">Anexo V (Alerta)</span>}
+                  </p>
+                </div>
+                <AlertCircle className={`h-5 w-5 ${fatorR >= 28 ? 'text-green-500' : 'text-red-500'}`} />
+              </div>
+              <div className="mt-3 pt-3 border-t">
+                <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1">
+                  <div className={`h-1.5 rounded-full ${fatorR >= 28 ? 'bg-green-500' : 'bg-red-500'}`} style={{ width: `${Math.min(fatorR, 100)}%` }}></div>
+                </div>
+                <p className="text-[10px] text-slate-400">Meta: 28%</p>
+              </div>
             </CardContent>
           </Card>
 
           <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-white">
             <CardContent className="pt-6">
-              <p className="text-sm font-medium text-green-700 mb-1">Economia Potencial Encontrada</p>
-              <p className="text-3xl font-bold text-green-600">
+              <p className="text-sm font-medium text-green-700 mb-1">Economia Potencial</p>
+              <p className="text-2xl font-bold text-green-600">
                 R$ {economiaMaxima.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
               </p>
-              <p className="text-xs text-green-700 mt-1">por ano, caso aplique as recomendações</p>
+              <p className="text-xs text-green-700 mt-1">por ano (estimativa)</p>
             </CardContent>
           </Card>
         </div>
+
+        {/* Gestão de Risco: Sublimite */}
+        {client.taxRegime === 'SIMPLES_NACIONAL' && (
+          <Card className="mb-6 border-amber-200 bg-amber-50">
+            <CardContent className="pt-4 pb-4 flex items-center justify-between">
+              <div className="w-1/3">
+                <p className="text-sm font-semibold text-amber-900">Alerta de Sublimite (R$ 3,6M)</p>
+                <p className="text-xs text-amber-700">Faturamento acumulado: R$ {revenue12m.toLocaleString('pt-BR')}</p>
+              </div>
+              <div className="w-2/3 pl-4">
+                <div className="w-full bg-amber-200 rounded-full h-2.5 mb-1">
+                  <div className={`h-2.5 rounded-full ${porcentagemSublimite > 90 ? 'bg-red-500' : 'bg-amber-500'}`} style={{ width: `${porcentagemSublimite}%` }}></div>
+                </div>
+                <div className="flex justify-between text-[10px] text-amber-700 font-medium">
+                  <span>0</span>
+                  <span>{porcentagemSublimite.toFixed(1)}% atingido</span>
+                  <span>R$ 3.600.000</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Gráfico de Simulações */}
         {simulacoes.length > 0 && currentTotalTax > 0 && (
