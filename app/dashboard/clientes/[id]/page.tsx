@@ -93,7 +93,7 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
 
   // Rodar diagnstico para obter score
   let diagnostico = null
-  let simulacoes = []
+  let simulacoes: any[] = []
   
   try {
     diagnostico = await digitalTwin.gerarDiagnostico()
