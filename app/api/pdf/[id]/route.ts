@@ -18,7 +18,7 @@ export async function GET(
     const { id } = await params
 
     const { data: client, error: clientError } = await supabase
-      .from('Client')
+      .from('clients')
       .select('*')
       .eq('id', id)
       .eq('userId', user.id)

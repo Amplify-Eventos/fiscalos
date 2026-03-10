@@ -64,14 +64,14 @@ export async function createClientAction(formData: FormData) {
   try {
     // Garantir que usuário existe
     const { data: existingUser } = await supabase
-      .from('User')
+      .from('users')
       .select('id')
       .eq('id', user.id)
       .single()
     
     if (!existingUser) {
       await supabase
-        .from('User')
+        .from('users')
         .insert({
           id: user.id,
           email: user.email!,
@@ -82,14 +82,14 @@ export async function createClientAction(formData: FormData) {
 
     // Buscar dados do município selecionado
     const { data: municipioData } = await supabase
-      .from('IssRate')
+      .from('iss_rates')
       .select('cityName, stateCode')
       .eq('ibgeCode', municipioIBGE)
       .single()
 
     // Criar cliente usando Supabase REST API
     const { data: client, error } = await supabase
-      .from('Client')
+      .from('clients')
       .insert({
         userId: user.id,
         // Dados Jurídicos

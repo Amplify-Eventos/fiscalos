@@ -23,7 +23,7 @@ export async function updateClientAction(clientId: string, formData: FormData): 
     const supabase = await createClient()
     
     const { error } = await supabase
-      .from('Client')
+      .from('clients')
       .update({
         companyName,
         cnpj,
@@ -58,7 +58,7 @@ export async function deleteClientAction(clientId: string): Promise<void> {
     const supabase = await createClient()
     
     const { error } = await supabase
-      .from('Client')
+      .from('clients')
       .delete()
       .eq('id', clientId)
       .eq('userId', user.id)

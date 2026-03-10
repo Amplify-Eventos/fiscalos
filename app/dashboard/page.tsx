@@ -23,7 +23,7 @@ export default async function DashboardPage() {
     try {
       const supabase = await createClient()
       const { data, error: dbError } = await supabase
-        .from('Client')
+        .from('clients')
         .select('*')
         .eq('userId', user.id)
         .order('createdAt', { ascending: false })

@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     const { data: client, error } = await supabase
-      .from('Client')
+      .from('clients')
       .insert({
         userId: user.id,
         

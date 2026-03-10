@@ -26,7 +26,7 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
   // Buscar cliente via Supabase REST API
   const supabase = await createClient()
   const { data: client, error } = await supabase
-    .from('Client')
+    .from('clients')
     .select('*')
     .eq('id', id)
     .eq('userId', user.id)
