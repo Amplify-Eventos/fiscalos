@@ -4,21 +4,67 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calculator, Users, FileText, Plus, TrendingUp } from "lucide-react"
 import { signOut, getUser } from "@/app/actions/auth"
 import { createClient } from "@/lib/supabase/server"
+import { criarDigitalTwin } from "@/lib/digital-twin"
+
+// Função auxiliar para mapear o banco para o Digital Twin
+function mapClientToTwin(client: any) {
+  return {
+    id: client.id,
+    nome: client.companyName,
+    cnpj: client.cnpj,
+    naturezaJuridica: client.legalNature,
+    porte: client.companySize,
+    regimeAtual: client.taxRegime,
+    cnaePrincipal: client.cnaeMain,
+    cnaesSecundarios: client.cnaeSecondary ? client.cnaeSecondary.split(',') : [],
+    tipoAtividade: client.revenueType || 'SERVICOS',
+    receitas: {
+      servicos: Number(client.revenueServicos || 0),
+      comercio: Number(client.revenueComercio || 0),
+      locacao: Number(client.revenueLocacao || 0),
+      outros: Number(client.revenueOutros || 0),
+      total: Number(client.revenueLast12m || 0)
+    },
+    custos: {
+      folhaTotal: Number(client.payrollLast12m || 0),
+      aluguel: Number(client.rentExpense || 0),
+      fornecedores: Number(client.supplierExpense || 0),
+      marketing: Number(client.marketingExpense || 0),
+      administrativo: Number(client.adminExpense || 0),
+      total: 0
+    },
+    localizacao: {
+      municipio: client.municipio || '',
+      uf: client.uf || '',
+      municipioIBGE: client.municipioIBGE || '0000000',
+      issAliquota: 0.05
+    },
+    fiscalAtual: {
+      das: Number(client.currentDAS || 0) / 12,
+      irpj: Number(client.currentIRPJ || 0) / 12,
+      csll: Number(client.currentCSLL || 0) / 12,
+      pis: Number(client.currentPIS || 0) / 12,
+      cofins: Number(client.currentCOFINS || 0) / 12,
+      iss: Number(client.currentISS || 0) / 12,
+      icms: Number(client.currentICMS || 0) / 12,
+      inss: Number(client.currentINSS || 0) / 12,
+      total: 0 // Será calculado no twin
+    }
+  }
+}
 
 export default async function DashboardPage() {
   let user
   let clients: any[] = []
   let error = null
+  let economiaTotal = 0
 
   try {
     user = await getUser()
-    console.log('🔍 User:', user?.id)
   } catch (e) {
-    console.error('❌ Erro ao obter usuário:', e)
     error = 'Erro ao verificar autenticação'
   }
 
-  // Buscar clientes via Supabase REST API
   if (user) {
     try {
       const supabase = await createClient()
@@ -31,9 +77,24 @@ export default async function DashboardPage() {
       if (dbError) throw dbError
       
       clients = data || []
-      console.log('✅ Clientes encontrados:', clients.length)
+      
+      // Calcular economia potencial para cada cliente
+      for (const client of clients) {
+        if (Number(client.revenueLast12m) > 0) {
+          const dados = mapClientToTwin(client)
+          const twin = criarDigitalTwin(dados)
+          const melhorCenario = await twin.encontrarMelhorCenario()
+          if (melhorCenario && melhorCenario.economiaVsAtual > 0) {
+            economiaTotal += melhorCenario.economiaVsAtual
+            client.economiaPotencial = melhorCenario.economiaVsAtual
+          } else {
+            client.economiaPotencial = 0
+          }
+        } else {
+          client.economiaPotencial = 0
+        }
+      }
     } catch (e: any) {
-      console.error('❌ Erro ao buscar clientes:', e)
       error = `Erro ao conectar: ${e.message}`
     }
   }
@@ -42,7 +103,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
       <header className="bg-white border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -60,9 +120,7 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Error Display */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
             <strong>Erro:</strong> {error}
@@ -82,7 +140,6 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -106,9 +163,9 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-slate-900">
-                {clients.filter(c => c.currentDAS || c.currentIRPJ).length}
+                {clients.filter(c => Number(c.revenueLast12m) > 0).length}
               </p>
-              <p className="text-xs text-slate-500">simulações concluídas</p>
+              <p className="text-xs text-slate-500">simulações ativas</p>
             </CardContent>
           </Card>
 
@@ -121,14 +178,13 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold text-slate-900">
-                R$ 0
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(economiaTotal)}
               </p>
-              <p className="text-xs text-slate-500">em economia identificada</p>
+              <p className="text-xs text-slate-500">em economia identificada/ano</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Clients List */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Seus Clientes</CardTitle>
@@ -157,9 +213,16 @@ export default async function DashboardPage() {
                       <p className="text-sm text-slate-500">
                         CNPJ: {client.cnpj} • CNAE: {client.cnaeMain}
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        Faturamento: R$ {(client.revenueLast12m || 0).toLocaleString('pt-BR')}
-                      </p>
+                      <div className="flex items-center gap-4 mt-1">
+                        <p className="text-xs text-slate-400">
+                          Faturamento: R$ {Number(client.revenueLast12m || 0).toLocaleString('pt-BR')}
+                        </p>
+                        {client.economiaPotencial > 0 && (
+                          <p className="text-xs text-green-600 font-medium">
+                            Economia: R$ {client.economiaPotencial.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}/ano
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <Link href={`/dashboard/clientes/${client.id}`}>
                       <Button variant="outline" size="sm">
