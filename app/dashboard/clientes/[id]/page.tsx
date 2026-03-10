@@ -260,6 +260,53 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
           </Card>
         )}
 
+                {/* Comparativo De-Para (DRE Simplificada) */}
+        {simulacoes.length > 0 && currentTotalTax > 0 && (
+          <Card className="mb-6">
+            <CardHeader className="border-b pb-4">
+              <CardTitle className="text-xl flex items-center">
+                <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                Comparativo De-Para: Recomendação
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-slate-700 uppercase bg-slate-50 border-b">
+                    <tr>
+                      <th className="px-4 py-3">Indicador (Anual)</th>
+                      <th className="px-4 py-3 bg-red-50 text-red-900 border-x">Situação Atual ({client.taxRegime?.replace('_', ' ') || 'SIMPLES'})</th>
+                      <th className="px-4 py-3 bg-green-50 text-green-900">Cenário Ideal ({simulacoes[0].regime.replace('_', ' ')})</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="px-4 py-3 font-medium text-slate-900">Faturamento</td>
+                      <td className="px-4 py-3 border-x">R$ {revenue12m.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
+                      <td className="px-4 py-3">R$ {revenue12m.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="px-4 py-3 font-medium text-slate-900">Total de Impostos</td>
+                      <td className="px-4 py-3 text-red-600 font-bold border-x">R$ {currentTotalTax.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
+                      <td className="px-4 py-3 text-green-600 font-bold">R$ {simulacoes[0].impostoTotal.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="px-4 py-3 font-medium text-slate-900">Carga Tributária Efetiva</td>
+                      <td className="px-4 py-3 border-x">{revenue12m > 0 ? ((currentTotalTax / revenue12m) * 100).toFixed(2) : 0}%</td>
+                      <td className="px-4 py-3">{revenue12m > 0 ? ((simulacoes[0].impostoTotal / revenue12m) * 100).toFixed(2) : 0}%</td>
+                    </tr>
+                    <tr className="bg-green-50/50">
+                      <td className="px-4 py-4 font-bold text-slate-900">Economia Anual Projetada</td>
+                      <td className="px-4 py-4 border-x"></td>
+                      <td className="px-4 py-4 font-bold text-green-700 text-lg">+ R$ {simulacoes[0].economiaVsAtual.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Gráfico de Simulações */}
         {simulacoes.length > 0 && currentTotalTax > 0 && (
           <Card className="mb-6">
