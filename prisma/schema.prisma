@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,159 +8,146 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// Enum para o plano do usuário
+model clients {
+  id               String        @id
+  userId           String
+  cnpj             String
+  companyName      String
+  cnaeMain         String
+  employeesCount   Int           @default(0)
+  revenueLast12m   Decimal       @db.Decimal(15, 2)
+  payrollLast12m   Decimal       @db.Decimal(15, 2)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime
+  activityDesc     String?
+  adminExpense     Decimal?      @db.Decimal(15, 2)
+  benefits         Decimal?      @db.Decimal(15, 2)
+  clientCount      Int?
+  cnaeSecondary    String?
+  companySize      CompanySize?
+  currentCOFINS    Decimal?      @db.Decimal(10, 2)
+  currentCSLL      Decimal?      @db.Decimal(10, 2)
+  currentDAS       Decimal?      @db.Decimal(10, 2)
+  currentICMS      Decimal?      @db.Decimal(10, 2)
+  currentINSS      Decimal?      @db.Decimal(10, 2)
+  currentIRPJ      Decimal?      @db.Decimal(10, 2)
+  currentISS       Decimal?      @db.Decimal(10, 2)
+  currentPIS       Decimal?      @db.Decimal(10, 2)
+  fantasyName      String?
+  legalNature      LegalNature?
+  logisticExpense  Decimal?      @db.Decimal(15, 2)
+  marketingExpense Decimal?      @db.Decimal(15, 2)
+  openingDate      DateTime?
+  proLabore        Decimal?      @db.Decimal(15, 2)
+  rentExpense      Decimal?      @db.Decimal(15, 2)
+  revenueComercio  Decimal?      @db.Decimal(15, 2)
+  revenueLocacao   Decimal?      @db.Decimal(15, 2)
+  revenueOutros    Decimal?      @db.Decimal(15, 2)
+  revenueServicos  Decimal?      @db.Decimal(15, 2)
+  revenueType      RevenueType?
+  sazonality       String?
+  simplesOpt       Boolean?
+  supplierExpense  Decimal?      @db.Decimal(15, 2)
+  taxRegime        TaxRegime?
+  ticketMedio      Decimal?      @db.Decimal(10, 2)
+  totalSalary      Decimal?      @db.Decimal(15, 2)
+  municipio        String?
+  municipioIBGE    String?
+  uf               String?
+  users            users         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  simulations      simulations[]
+}
+
+model cnae_codes {
+  id            String   @id
+  code          String   @unique
+  description   String
+  anexoSimples  String
+  canBeSimples  Boolean  @default(true)
+  issPercentage Decimal? @db.Decimal(4, 2)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+}
+
+model iss_rates {
+  id            String   @id
+  ibgeCode      String   @unique
+  cityName      String
+  stateCode     String
+  issRate       Decimal  @db.Decimal(4, 2)
+  effectiveDate DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+}
+
+model simples_rates {
+  id             String   @id
+  anexo          String
+  faixa          Int
+  limiteInferior Decimal  @db.Decimal(15, 2)
+  limiteSuperior Decimal  @db.Decimal(15, 2)
+  aliquota       Decimal  @db.Decimal(5, 4)
+  deducao        Decimal  @db.Decimal(15, 2)
+  effectiveYear  Int      @default(2026)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime
+  percentualCPP  Decimal  @default(0) @db.Decimal(5, 4)
+
+  @@unique([anexo, faixa])
+}
+
+model simulations {
+  id             String   @id
+  clientId       String
+  createdAt      DateTime @default(now())
+  inputData      Json
+  resultData     Json
+  selectedRegime String?
+  clients        clients  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model users {
+  id        String    @id
+  email     String    @unique
+  name      String?
+  planTier  PlanTier  @default(FREE)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  clients   clients[]
+}
+
 enum PlanTier {
   FREE
   PRO
   AGENCY
 }
 
-// Enum para regime tributário
 enum TaxRegime {
   SIMPLES_NACIONAL
   LUCRO_PRESUMIDO
   LUCRO_REAL
+  MEI
 }
 
-// Enum para natureza jurídica
 enum LegalNature {
-  MEI
-  ME
-  EPP
   LTDA
-  SA
   SLU
+  MEI
+  EI
+  SA
+  EIRELI
 }
 
-// Enum para porte da empresa
 enum CompanySize {
-  MEI
   ME
   EPP
   DEMAIS
 }
 
-// Usuário (contador)
-model User {
-  id           String     @id @default(uuid())
-  email        String     @unique
-  name         String?
-  planTier     PlanTier   @default(FREE)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  clients      Client[]
-}
-
-// Cliente (empresa do cliente do contador)
-model Client {
-  id                  String      @id @default(uuid())
-  userId              String
-  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Dados Jurídicos
-  cnpj                String
-  companyName         String
-  legalNature         LegalNature?
-  companySize         CompanySize?
-  taxRegime           TaxRegime   @default(SIMPLES_NACIONAL)
-  cnaeMain            String
-  cnaeSecondary       String?
-  
-  // Localização
-  municipio           String?
-  municipioIBGE       String?
-  uf                  String?
-  
-  // Dados Financeiros
-  revenueLast12m      Decimal     @default(0)
-  revenueServicos     Decimal?
-  revenueComercio     Decimal?
-  revenueLocacao      Decimal?
-  revenueOutros       Decimal?
-  payrollLast12m      Decimal     @default(0)
-  
-  // Custos
-  rentExpense         Decimal?
-  supplierExpense     Decimal?
-  marketingExpense    Decimal?
-  adminExpense        Decimal?
-  
-  // Dados Trabalhistas
-  employeesCount      Int         @default(0)
-  totalSalary         Decimal?
-  proLabore           Decimal?
-  benefits            Decimal?
-  
-  // Impostos Atuais
-  currentDAS          Decimal?
-  currentIRPJ         Decimal?
-  currentCSLL         Decimal?
-  currentPIS          Decimal?
-  currentCOFINS       Decimal?
-  currentISS          Decimal?
-  currentICMS         Decimal?
-  currentINSS         Decimal?
-  
-  // Tipo de receita principal
-  revenueType         String?
-  
-  // Timestamps
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
-  
-  simulations         Simulation[]
-  
-  @@index([userId])
-  @@index([cnpj])
-}
-
-// Simulação (histórico)
-model Simulation {
-  id              String    @id @default(uuid())
-  clientId        String
-  client          Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
-  // Dados da simulação
-  inputData       Json      // Dados de entrada
-  resultData      Json      // Resultado completo
-  
-  createdAt       DateTime  @default(now())
-  
-  @@index([clientId])
-}
-
-// Faixas do Simples Nacional
-model SimplesRate {
-  id              String    @id @default(uuid())
-  anexo           String    // I, II, III, IV, V
-  faixa           Int       // 1 a 6
-  limiteInferior  Decimal
-  limiteSuperior  Decimal
-  aliquota        Decimal   // Ex: 0.1400 = 14%
-  deducao         Decimal
-  percentualCPP   Decimal?
-  
-  @@unique([anexo, faixa])
-  @@index([anexo])
-}
-
-// Alíquotas de ISS por município
-model IssRate {
-  id          String    @id @default(uuid())
-  ibgeCode    String    @unique
-  cityName    String
-  stateCode   String
-  issRate     Decimal   // Ex: 0.05 = 5%
-  
-  @@index([ibgeCode])
-}
-
-// Mapeamento CNAE → Anexo Simples
-model CnaeCode {
-  id            String    @id @default(uuid())
-  code          String    @unique
-  description   String?
-  anexoSimples  String    // I, II, III, IV, V
-  
-  @@index([code])
+enum RevenueType {
+  SERVICOS
+  COMERCIO
+  INDUSTRIA
+  LOCACAO
+  MISTO
 }

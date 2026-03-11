@@ -265,3 +265,12 @@ const BASES_CALCULO = {
   CSLL_COMERCIO: 0.12,             // 12%
 }
 ```
+
+
+## ?? AI Guidelines (Preveno de Travamento)
+
+1. **Nunca** rode `npm run dev` ou `npx next dev` de forma sncrona/bloqueante via ferramenta de execuo, pois o processo no termina e causa timeout. Se precisar rodar o servidor, use processos em background (process / yieldMs).
+2. **Nunca** faa leitura em massa das pastas `.next`, `node_modules`, ou arquivos de lock gigantes como `package-lock.json`.
+3. Ao rodar comandos do Prisma que possam causar perda de dados (como `npx prisma db push`), use a flag `--accept-data-loss` caso tenha certeza absoluta da alterao, ou pea confirmao expressa ao usurio antes de rodar para no travar em prompts iterativos (Y/N).
+4. Caso ocorra erro de linting ou type-checking, resolva os problemas de um arquivo por vez, sem encher o contexto de logs extensos.
+

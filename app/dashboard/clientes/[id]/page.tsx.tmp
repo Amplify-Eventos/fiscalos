@@ -260,80 +260,45 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
           </Card>
         )}
 
-                        {/* NOVA DRE COMPARATIVA DETALHADA */}
+                {/* Comparativo De-Para (DRE Simplificada) */}
         {simulacoes.length > 0 && currentTotalTax > 0 && (
-          <Card className="mb-6 shadow-md border-blue-100">
-            <CardHeader className="border-b bg-blue-50/50 pb-4">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-xl flex items-center text-slate-800">
-                  <FileText className="h-5 w-5 mr-2 text-blue-600" />
-                  Raio-X Tributário: Atual vs Ideal
-                </CardTitle>
-                <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
-                  Recomendação: {simulacoes[0].regime.replace('_', ' ')}
-                </span>
-              </div>
+          <Card className="mb-6">
+            <CardHeader className="border-b pb-4">
+              <CardTitle className="text-xl flex items-center">
+                <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                Comparativo De-Para: Recomendação
+              </CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="pt-6">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-slate-600 uppercase bg-slate-100">
+                  <thead className="text-xs text-slate-700 uppercase bg-slate-50 border-b">
                     <tr>
-                      <th className="px-6 py-4">Tributo / Indicador (Ano)</th>
-                      <th className="px-6 py-4 bg-red-50/80 text-red-900 border-x border-red-100">Cenário Atual ({client.taxRegime?.replace('_', ' ') || 'SIMPLES'})</th>
-                      <th className="px-6 py-4 bg-green-50/80 text-green-900">Cenário Ideal ({simulacoes[0].regime.replace('_', ' ')})</th>
+                      <th className="px-4 py-3">Indicador (Anual)</th>
+                      <th className="px-4 py-3 bg-red-50 text-red-900 border-x">Situação Atual ({client.taxRegime?.replace('_', ' ') || 'SIMPLES'})</th>
+                      <th className="px-4 py-3 bg-green-50 text-green-900">Cenário Ideal ({simulacoes[0].regime.replace('_', ' ')})</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    <tr className="hover:bg-slate-50">
-                      <td className="px-6 py-4 font-medium text-slate-700">Faturamento Bruto</td>
-                      <td className="px-6 py-4 border-x border-slate-100">R$ {revenue12m.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
-                      <td className="px-6 py-4">R$ {revenue12m.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="px-4 py-3 font-medium text-slate-900">Faturamento</td>
+                      <td className="px-4 py-3 border-x">R$ {revenue12m.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
+                      <td className="px-4 py-3">R$ {revenue12m.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
                     </tr>
-                    
-                    <tr className="hover:bg-slate-50 text-slate-500">
-                      <td className="px-6 py-3 pl-10 flex items-center"><div className="w-2 h-2 rounded-full bg-slate-300 mr-2"></div> DAS / Simples</td>
-                      <td className="px-6 py-3 border-x border-slate-100">R$ {Number(client.currentDAS || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
-                      <td className="px-6 py-3">R$ {simulacoes[0].regime === 'SIMPLES_NACIONAL' ? simulacoes[0].impostoTotal.toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '0'}</td>
+                    <tr className="border-b">
+                      <td className="px-4 py-3 font-medium text-slate-900">Total de Impostos</td>
+                      <td className="px-4 py-3 text-red-600 font-bold border-x">R$ {currentTotalTax.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
+                      <td className="px-4 py-3 text-green-600 font-bold">R$ {simulacoes[0].impostoTotal.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
                     </tr>
-                    
-                    <tr className="hover:bg-slate-50 text-slate-500">
-                      <td className="px-6 py-3 pl-10 flex items-center"><div className="w-2 h-2 rounded-full bg-slate-300 mr-2"></div> IRPJ + CSLL</td>
-                      <td className="px-6 py-3 border-x border-slate-100">R$ {(Number(client.currentIRPJ || 0) + Number(client.currentCSLL || 0)).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
-                      <td className="px-6 py-3">R$ {simulacoes[0].regime !== 'SIMPLES_NACIONAL' ? (simulacoes[0].impostoTotal * 0.4).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '0'} <span className="text-[10px]">*</span></td>
+                    <tr className="border-b">
+                      <td className="px-4 py-3 font-medium text-slate-900">Carga Tributária Efetiva</td>
+                      <td className="px-4 py-3 border-x">{revenue12m > 0 ? ((currentTotalTax / revenue12m) * 100).toFixed(2) : 0}%</td>
+                      <td className="px-4 py-3">{revenue12m > 0 ? ((simulacoes[0].impostoTotal / revenue12m) * 100).toFixed(2) : 0}%</td>
                     </tr>
-                    
-                    <tr className="hover:bg-slate-50 text-slate-500">
-                      <td className="px-6 py-3 pl-10 flex items-center"><div className="w-2 h-2 rounded-full bg-slate-300 mr-2"></div> PIS + COFINS</td>
-                      <td className="px-6 py-3 border-x border-slate-100">R$ {(Number(client.currentPIS || 0) + Number(client.currentCOFINS || 0)).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
-                      <td className="px-6 py-3">R$ {simulacoes[0].regime !== 'SIMPLES_NACIONAL' ? (simulacoes[0].impostoTotal * 0.3).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '0'} <span className="text-[10px]">*</span></td>
-                    </tr>
-                    
-                    <tr className="hover:bg-slate-50 text-slate-500">
-                      <td className="px-6 py-3 pl-10 flex items-center"><div className="w-2 h-2 rounded-full bg-slate-300 mr-2"></div> ISS / ICMS</td>
-                      <td className="px-6 py-3 border-x border-slate-100">R$ {(Number(client.currentISS || 0) + Number(client.currentICMS || 0)).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
-                      <td className="px-6 py-3">R$ {simulacoes[0].regime !== 'SIMPLES_NACIONAL' ? (simulacoes[0].impostoTotal * 0.3).toLocaleString('pt-BR', { maximumFractionDigits: 0 }) : '0'} <span className="text-[10px]">*</span></td>
-                    </tr>
-
-                    <tr className="bg-slate-50 font-semibold">
-                      <td className="px-6 py-4 text-slate-900">Carga Tributária Efetiva</td>
-                      <td className="px-6 py-4 border-x border-slate-200 text-red-700">{revenue12m > 0 ? ((currentTotalTax / revenue12m) * 100).toFixed(2) : 0}%</td>
-                      <td className="px-6 py-4 text-green-700">{revenue12m > 0 ? ((simulacoes[0].impostoTotal / revenue12m) * 100).toFixed(2) : 0}%</td>
-                    </tr>
-                    
-                    <tr className="bg-red-50/30">
-                      <td className="px-6 py-4 font-bold text-slate-900">Total Pago em Impostos</td>
-                      <td className="px-6 py-4 text-red-600 font-bold border-x border-red-100 text-lg">R$ {currentTotalTax.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
-                      <td className="px-6 py-4 text-slate-600 font-medium">R$ {simulacoes[0].impostoTotal.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
-                    </tr>
-                    
-                    <tr className="bg-green-100/50 border-t-2 border-green-200">
-                      <td className="px-6 py-5 font-bold text-green-900 uppercase tracking-wider text-sm flex items-center">
-                        <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
-                        Economia Anual Projetada
-                      </td>
-                      <td className="px-6 py-5 border-x border-green-200"></td>
-                      <td className="px-6 py-5 font-black text-green-700 text-2xl">+ R$ {simulacoes[0].economiaVsAtual.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
+                    <tr className="bg-green-50/50">
+                      <td className="px-4 py-4 font-bold text-slate-900">Economia Anual Projetada</td>
+                      <td className="px-4 py-4 border-x"></td>
+                      <td className="px-4 py-4 font-bold text-green-700 text-lg">+ R$ {simulacoes[0].economiaVsAtual.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</td>
                     </tr>
                   </tbody>
                 </table>
