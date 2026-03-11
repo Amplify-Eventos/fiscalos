@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    const municipios = await prisma.issRate.findMany({
+    const municipios = await prisma.iss_rates.findMany({
       orderBy: [
         { stateCode: 'asc' },
         { cityName: 'asc' }
