@@ -342,7 +342,80 @@ export default async function ClienteDetalhesPage({ params }: { params: Promise<
           </Card>
         )}
 
-        {/* Gráfico de Simulações */}
+                {/* TERMÔMETRO FATOR R AVANÇADO */}
+        {client.taxRegime === 'SIMPLES_NACIONAL' && (
+          <Card className="mb-6 shadow-sm border-slate-200">
+            <CardHeader className="border-b pb-4">
+              <CardTitle className="text-xl flex items-center text-slate-800">
+                <PieChart className="h-5 w-5 mr-2 text-indigo-600" />
+                Termômetro Fator R (Inteligência de Pró-Labore)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="flex flex-col md:flex-row gap-8 items-center">
+                <div className="w-full md:w-1/3">
+                  <div className="relative pt-4 text-center">
+                    <div className="text-5xl font-black text-slate-800 mb-2">{fatorR.toFixed(1)}%</div>
+                    <p className="text-sm text-slate-500 mb-4">Folha de Pagamento / Faturamento</p>
+                    
+                    <div className="w-full bg-slate-200 rounded-full h-4 mb-2 overflow-hidden flex">
+                      <div className="bg-red-400 h-4" style={{ width: '28%' }}></div>
+                      <div className="bg-green-500 h-4" style={{ width: '72%' }}></div>
+                      
+                      {/* Marcador atual */}
+                      <div 
+                        className="absolute w-1 h-6 bg-slate-900 top-1/2 -mt-3 shadow-md" 
+                        style={{ left: `${Math.min(fatorR, 100)}%`, transition: 'left 0.5s ease-out' }}
+                      ></div>
+                    </div>
+                    
+                    <div className="flex justify-between text-xs font-bold text-slate-400">
+                      <span>0%</span>
+                      <span className="text-indigo-600 relative -left-4">Meta 28%</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="w-full md:w-2/3">
+                  {fatorR >= 28 ? (
+                    <div className="bg-green-50 rounded-lg p-6 border border-green-100">
+                      <h3 className="text-lg font-bold text-green-800 mb-2 flex items-center">
+                        <CheckCircle className="h-5 w-5 mr-2" />
+                        Empresa Segura no Anexo III
+                      </h3>
+                      <p className="text-sm text-green-700">
+                        A folha de pagamento atual (R$ {payroll12m.toLocaleString('pt-BR', {maximumFractionDigits:0})}) já representa 28% ou mais do faturamento. 
+                        A tributação dos serviços está na alíquota inicial de 6% (Anexo III) e não em 15.5% (Anexo V).
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-amber-50 rounded-lg p-6 border border-amber-200">
+                      <h3 className="text-lg font-bold text-amber-800 mb-2 flex items-center">
+                        <AlertTriangle className="h-5 w-5 mr-2" />
+                        Risco de Tributação no Anexo V (15.5%)
+                      </h3>
+                      <p className="text-sm text-amber-800 mb-4">
+                        A folha de pagamento atual (R$ {payroll12m.toLocaleString('pt-BR', {maximumFractionDigits:0})}) está abaixo de 28% do faturamento (R$ {revenue12m.toLocaleString('pt-BR', {maximumFractionDigits:0})}).
+                      </p>
+                      
+                      <div className="bg-white p-4 rounded border border-amber-100 mt-2">
+                        <p className="font-semibold text-slate-800 text-sm mb-1">Ação Recomendada:</p>
+                        <p className="text-slate-600 text-sm">
+                          Para atingir 28% e cair do Anexo V (15.5%) para o Anexo III (6%), o Pró-Labore/Folha acumulado de 12 meses deve ser de no mínimo <strong>R$ {(revenue12m * 0.28).toLocaleString('pt-BR', {maximumFractionDigits:0})}</strong>.
+                        </p>
+                        <p className="text-indigo-700 text-sm font-medium mt-2">
+                          Faltam R$ {((revenue12m * 0.28) - payroll12m).toLocaleString('pt-BR', {maximumFractionDigits:0})} na folha anual (aprox. R$ {(((revenue12m * 0.28) - payroll12m) / 12).toLocaleString('pt-BR', {maximumFractionDigits:0})}/mês) para garantir a alíquota menor.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+{/* Gráfico de Simulações */}
         {simulacoes.length > 0 && currentTotalTax > 0 && (
           <Card className="mb-6">
             <CardHeader className="border-b pb-4">
