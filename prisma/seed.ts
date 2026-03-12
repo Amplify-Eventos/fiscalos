@@ -54,10 +54,10 @@ async function main() {
 
   console.log('📊 Inserindo taxas do Simples Nacional...')
   for (const rate of simplesRates) {
-    await prisma.simplesRate.upsert({
+    await prisma.simples_rates.upsert({
       where: { anexo_faixa: { anexo: rate.anexo, faixa: rate.faixa } },
       update: { ...rate },
-      create: { ...rate },
+      create: { ...rate, id: require('crypto').randomUUID(), updatedAt: new Date() },
     })
   }
 
@@ -83,10 +83,10 @@ async function main() {
 
   console.log('🏢 Inserindo CNAEs de exemplo...')
   for (const cnae of cnaes) {
-    await prisma.cnaeCode.upsert({
+    await prisma.cnae_codes.upsert({
       where: { code: cnae.code },
       update: { ...cnae },
-      create: { ...cnae },
+      create: { ...cnae, id: require('crypto').randomUUID(), updatedAt: new Date() },
     })
   }
 
@@ -111,10 +111,10 @@ async function main() {
 
   console.log('🏙️ Inserindo taxas de ISS...')
   for (const iss of issRates) {
-    await prisma.issRate.upsert({
+    await prisma.iss_rates.upsert({
       where: { ibgeCode: iss.ibgeCode },
       update: { ...iss },
-      create: { ...iss },
+      create: { ...iss, id: require('crypto').randomUUID(), updatedAt: new Date() },
     })
   }
 

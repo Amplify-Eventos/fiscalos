@@ -17,7 +17,7 @@ export default async function EditarClientePage({ params }: { params: Promise<{ 
     redirect('/login')
   }
 
-  const client = await prisma.client.findUnique({
+  const client = await prisma.clients.findUnique({
     where: { id, userId: user.id }
   })
 

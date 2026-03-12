@@ -141,7 +141,7 @@ export interface ResultadoLucroReal {
  * Busca a alíquota ISS do município
  */
 export async function buscarISS(municipioIBGE: string): Promise<number> {
-  const issRate = await prisma.issRate.findUnique({
+  const issRate = await prisma.iss_rates.findUnique({
     where: { ibgeCode: municipioIBGE }
   })
   return issRate ? Number(issRate.issRate) : 0.05 // Default 5%
@@ -151,7 +151,7 @@ export async function buscarISS(municipioIBGE: string): Promise<number> {
  * Busca informações do CNAE
  */
 export async function buscarCNAE(codigo: string) {
-  const cnae = await prisma.cnaeCode.findUnique({
+  const cnae = await prisma.cnae_codes.findUnique({
     where: { code: codigo.replace('-', '').replace('/', '') }
   })
   return cnae
@@ -161,7 +161,7 @@ export async function buscarCNAE(codigo: string) {
  * Busca as faixas do Simples Nacional para um anexo
  */
 export async function buscarFaixasSimples(anexo: string) {
-  const faixas = await prisma.simplesRate.findMany({
+  const faixas = await prisma.simples_rates.findMany({
     where: { anexo },
     orderBy: { faixa: 'asc' }
   })
