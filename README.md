@@ -309,10 +309,4 @@ Criamos 3 perfis de empresas para validar:
 
 ## 👤 Autor
 
-Desenvolvido por **Pulseobot** com supervisão de **Famoso NorT**.
-
----
-
-## 📄 Licença
-
-MIT License - Use livremente para seus projetos.
+Desenvolvido por **Famoso NorT**.
