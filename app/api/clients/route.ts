@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
     const { data: client, error } = await supabase
       .from('clients')
       .insert({
+        id: crypto.randomUUID(),
         userId: user.id,
         
         // Dados Jurídicos

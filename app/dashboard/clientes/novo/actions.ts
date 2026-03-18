@@ -91,6 +91,7 @@ export async function createClientAction(formData: FormData) {
     const { data: client, error } = await supabase
       .from('clients')
       .insert({
+        id: crypto.randomUUID(),
         userId: user.id,
         // Dados Jurídicos
         companyName,
