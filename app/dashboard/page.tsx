@@ -143,6 +143,9 @@ export default async function DashboardPage() {
             <span className="text-sm text-slate-600">
               {user?.user_metadata?.name || user?.email}
             </span>
+            <Link href="/dashboard/settings">
+              <Button variant="outline" size="sm">Configurações</Button>
+            </Link>
             <form action={signOut}>
               <Button variant="ghost" type="submit">Sair</Button>
             </form>

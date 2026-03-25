@@ -28,6 +28,17 @@ export async function GET(
       return NextResponse.json({ error: 'Client not found' }, { status: 404 })
     }
 
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('agencyName, agencyLogo, agencyColor, agencyWebsite')
+      .eq('id', user.id)
+      .single()
+
+    const agencyName = userProfile?.agencyName || 'FiscalOS - Inteligência Tributária'
+    const agencyColor = userProfile?.agencyColor || '#2563eb'
+    const agencyLogo = userProfile?.agencyLogo || ''
+    const agencyWebsite = userProfile?.agencyWebsite || ''
+
     // Criar Digital Twin e rodar análise
     const digitalTwin = criarDigitalTwin({
       id: client.id,
@@ -105,8 +116,8 @@ export async function GET(
   <title>Planejamento Fiscal Estratégico - ${client.companyName}</title>
   <style>
     body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #1e293b; max-width: 900px; margin: 0 auto; line-height: 1.5; }
-    .header { border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: end; }
-    .title { font-size: 28px; color: #1e3a8a; margin: 0; font-weight: 800; }
+    .header { border-bottom: 3px solid ${agencyColor}; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: end; }
+    .title { font-size: 28px; color: ${agencyColor}; margin: 0; font-weight: 800; }
     .subtitle { color: #64748b; margin-top: 5px; font-size: 14px; }
     
     .score-section { display: flex; gap: 30px; margin-bottom: 40px; background: #f8fafc; padding: 30px; border-radius: 12px; }
@@ -121,7 +132,7 @@ export async function GET(
     .metric-value { font-size: 16px; font-weight: 600; color: #334155; }
     
     .section { margin-bottom: 40px; }
-    .section-title { font-size: 18px; font-weight: 700; color: #1e3a8a; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
+    .section-title { font-size: 18px; font-weight: 700; color: ${agencyColor}; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
     
     .best-scenario { background: #dcfce7; padding: 25px; border-radius: 12px; border-left: 5px solid #16a34a; margin-bottom: 30px; }
     .scenario-label { font-size: 12px; text-transform: uppercase; color: #15803d; font-weight: bold; }
@@ -157,12 +168,16 @@ export async function GET(
 </head>
 <body>
   <div class="header">
-    <div>
-      <h1 class="title">Planejamento Fiscal Estratégico</h1>
-      <p class="subtitle">Relatório gerado em ${today}</p>
+    <div style="display: flex; gap: 20px; align-items: center;">
+      ${agencyLogo ? `<img src="${agencyLogo}" style="max-height: 60px; max-width: 150px; object-fit: contain;" />` : ''}
+      <div>
+        <h1 class="title" style="margin-bottom: 5px;">Planejamento Fiscal Estratégico</h1>
+        <p class="subtitle" style="margin: 0;">Relatório gerado em ${today}</p>
+        <p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b; font-weight: bold;">Preparado por: ${agencyName}</p>
+      </div>
     </div>
     <div style="text-align: right">
-      <div style="font-weight: bold; font-size: 18px;">${client.companyName}</div>
+      <div style="font-weight: bold; font-size: 18px; color: #1e293b;">${client.companyName}</div>
       <div style="font-size: 14px; color: #64748b;">CNPJ: ${client.cnpj}</div>
     </div>
   </div>
@@ -274,7 +289,7 @@ export async function GET(
 
   <div class="footer">
     <p>Este relatório é uma simulação estratégica e não substitui a análise legal de um contador.</p>
-    <p>FiscalOS - Inteligência Tributária</p>
+    <p>${agencyName} ${agencyWebsite ? `| <a href="${agencyWebsite}" target="_blank">${agencyWebsite}</a>` : ''}</p>
   </div>
 
   <script>window.onload = () => window.print()</script>
