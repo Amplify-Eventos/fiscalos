@@ -31,5 +31,4 @@ export async function updateSettingsAction(formData: FormData) {
   }
 
   revalidatePath('/dashboard/settings')
-  return { success: true }
 }
