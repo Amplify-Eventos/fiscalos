@@ -1,21 +1,21 @@
 /**
  * DIGITAL TWIN FISCAL
- * 
+ *
  * Este módulo cria uma representação virtual da empresa
  * e roda simulações fiscais em múltiplos cenários.
- * 
+ *
  * O objetivo é encontrar a estrutura mais eficiente tributariamente.
  */
 
-import { 
+import {
   calcularSimplesNacionalV2,
   calcularLucroPresumidoV2,
   calcularLucroReal,
   analisarFatorR,
   calcularFatorR,
   determinarAnexo,
-  LIMITES
-} from './fiscal-engine-v2'
+  LIMITES,
+} from "./fiscal-engine-v2";
 
 // ============================================
 // TIPOS E INTERFACES
@@ -23,136 +23,136 @@ import {
 
 export interface EmpresaModel {
   // Identificação
-  id: string
-  nome: string
-  cnpj: string
-  
+  id: string;
+  nome: string;
+  cnpj: string;
+
   // Estrutura Jurídica
-  naturezaJuridica: 'LTDA' | 'SLU' | 'MEI' | 'EI' | 'SA' | 'EIRELI'
-  porte: 'ME' | 'EPP' | 'DEMAIS'
-  regimeAtual: 'SIMPLES_NACIONAL' | 'LUCRO_PRESUMIDO' | 'LUCRO_REAL' | 'MEI'
-  
+  naturezaJuridica: "LTDA" | "SLU" | "MEI" | "EI" | "SA" | "EIRELI";
+  porte: "ME" | "EPP" | "DEMAIS";
+  regimeAtual: "SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL" | "MEI";
+
   // Atividade
-  cnaePrincipal: string
-  cnaesSecundarios: string[]
-  tipoAtividade: 'SERVICOS' | 'COMERCIO' | 'INDUSTRIA' | 'LOCACAO' | 'MISTO'
-  
+  cnaePrincipal: string;
+  cnaesSecundarios: string[];
+  tipoAtividade: "SERVICOS" | "COMERCIO" | "INDUSTRIA" | "LOCACAO" | "MISTO";
+
   // Financeiro
   receitas: {
-    servicos: number
-    comercio: number
-    locacao: number
-    outros: number
-    total: number
-  }
-  
+    servicos: number;
+    comercio: number;
+    locacao: number;
+    outros: number;
+    total: number;
+  };
+
   // Custos
   custos: {
-    folhaTotal: number      // Folha 12 meses
-    aluguel: number
-    fornecedores: number
-    marketing: number
-    administrativo: number
-    total: number
-  }
-  
+    folhaTotal: number; // Folha 12 meses
+    aluguel: number;
+    fornecedores: number;
+    marketing: number;
+    administrativo: number;
+    total: number;
+  };
+
   // Trabalhista
   trabalhista: {
-    funcionarios: number
-    salarioTotal: number
-    proLabore: number
-    beneficios: number
-  }
-  
+    funcionarios: number;
+    salarioTotal: number;
+    proLabore: number;
+    beneficios: number;
+  };
+
   // Localização
   localizacao: {
-    municipio: string
-    uf: string
-    municipioIBGE: string
-    issAliquota: number  // 2% a 5%
-  }
-  
+    municipio: string;
+    uf: string;
+    municipioIBGE: string;
+    issAliquota: number; // 2% a 5%
+  };
+
   // Fiscal Atual
   fiscalAtual: {
-    das: number
-    irpj: number
-    csll: number
-    pis: number
-    cofins: number
-    iss: number
-    icms: number
-    inss: number
-    total: number
-  }
+    das: number;
+    irpj: number;
+    csll: number;
+    pis: number;
+    cofins: number;
+    iss: number;
+    icms: number;
+    inss: number;
+    total: number;
+  };
 }
 
 export interface CenarioSimulacao {
-  id: string
-  nome: string
-  descricao: string
-  regime: 'SIMPLES_NACIONAL' | 'LUCRO_PRESUMIDO' | 'LUCRO_REAL'
-  estrutura: 'UNICA' | 'DUAS_EMPRESAS' | 'HOLDING'
-  anexoSimples?: 'I' | 'II' | 'III' | 'IV' | 'V'
-  
+  id: string;
+  nome: string;
+  descricao: string;
+  regime: "SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL";
+  estrutura: "UNICA" | "DUAS_EMPRESAS" | "HOLDING";
+  anexoSimples?: "I" | "II" | "III" | "IV" | "V";
+
   // Resultados
-  impostoTotal: number
-  aliquotaEfetiva: number
-  impostoMensal: number
-  
+  impostoTotal: number;
+  aliquotaEfetiva: number;
+  impostoMensal: number;
+
   // Detalhamento
   detalhes: {
-    das?: number
-    irpj?: number
-    csll?: number
-    pis?: number
-    cofins?: number
-    iss?: number
-    icms?: number
-    inss?: number
-    cpp?: number
-    adicionalIRPJ?: number
-  }
-  
+    das?: number;
+    irpj?: number;
+    csll?: number;
+    pis?: number;
+    cofins?: number;
+    iss?: number;
+    icms?: number;
+    inss?: number;
+    cpp?: number;
+    adicionalIRPJ?: number;
+  };
+
   // Comparação
-  economiaVsAtual: number
-  percentualEconomia: number
-  
+  economiaVsAtual: number;
+  percentualEconomia: number;
+
   // Viabilidade
-  viavel: boolean
-  restricoes: string[]
+  viavel: boolean;
+  restricoes: string[];
 }
 
 export interface EstrategiaRecomendada {
-  id: string
-  nome: string
-  descricao: string
-  impacto: 'ALTO' | 'MEDIO' | 'BAIXO'
-  economiaAnual: number
-  custoImplementacao: number
-  roi: number // Retorno sobre investimento
-  prazoImplementacao: string
-  acoes: string[]
+  id: string;
+  nome: string;
+  descricao: string;
+  impacto: "ALTO" | "MEDIO" | "BAIXO";
+  economiaAnual: number;
+  custoImplementacao: number;
+  roi: number; // Retorno sobre investimento
+  prazoImplementacao: string;
+  acoes: string[];
 }
 
 export interface ScoreFiscal {
-  score: number // 0-100
-  classificacao: 'CRITICO' | 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO'
+  score: number; // 0-100
+  classificacao: "CRITICO" | "RUIM" | "REGULAR" | "BOM" | "OTIMO";
   fatores: {
-    fator: string
-    peso: number
-    nota: number
-    observacao: string
-  }[]
-  recomendacoes: string[]
+    fator: string;
+    peso: number;
+    nota: number;
+    observacao: string;
+  }[];
+  recomendacoes: string[];
 }
 
 export interface DiagnosticoFiscal {
-  score: ScoreFiscal
-  riscoFiscal: 'BAIXO' | 'MEDIO' | 'ALTO' | 'CRITICO'
-  eficienciaTributaria: 'BAIXA' | 'MEDIA' | 'ALTA'
-  potencialEconomia: 'BAIXO' | 'MEDIO' | 'ALTO'
-  problemasDetectados: string[]
-  oportunidadesIdentificadas: string[]
+  score: ScoreFiscal;
+  riscoFiscal: "BAIXO" | "MEDIO" | "ALTO" | "CRITICO";
+  eficienciaTributaria: "BAIXA" | "MEDIA" | "ALTA";
+  potencialEconomia: "BAIXO" | "MEDIO" | "ALTO";
+  problemasDetectados: string[];
+  oportunidadesIdentificadas: string[];
 }
 
 // ============================================
@@ -160,69 +160,71 @@ export interface DiagnosticoFiscal {
 // ============================================
 
 export class DigitalTwinFiscal {
-  private empresa: EmpresaModel
-  
+  private empresa: EmpresaModel;
+
   constructor(dadosEmpresa: Partial<EmpresaModel>) {
-    this.empresa = this.normalizarDados(dadosEmpresa)
+    this.empresa = this.normalizarDados(dadosEmpresa);
   }
-  
+
   /**
    * Normaliza os dados brutos para o modelo padrão
    */
   private normalizarDados(dados: Partial<EmpresaModel>): EmpresaModel {
-    const receitaTotal = (dados.receitas?.servicos || 0) +
-                         (dados.receitas?.comercio || 0) +
-                         (dados.receitas?.locacao || 0) +
-                         (dados.receitas?.outros || 0)
-    
+    const receitaTotal =
+      (dados.receitas?.servicos || 0) +
+      (dados.receitas?.comercio || 0) +
+      (dados.receitas?.locacao || 0) +
+      (dados.receitas?.outros || 0);
+
     return {
-      id: dados.id || '',
-      nome: dados.nome || '',
-      cnpj: dados.cnpj || '',
-      
-      naturezaJuridica: dados.naturezaJuridica || 'LTDA',
-      porte: dados.porte || 'ME',
-      regimeAtual: dados.regimeAtual || 'SIMPLES_NACIONAL',
-      
-      cnaePrincipal: dados.cnaePrincipal || '',
+      id: dados.id || "",
+      nome: dados.nome || "",
+      cnpj: dados.cnpj || "",
+
+      naturezaJuridica: dados.naturezaJuridica || "LTDA",
+      porte: dados.porte || "ME",
+      regimeAtual: dados.regimeAtual || "SIMPLES_NACIONAL",
+
+      cnaePrincipal: dados.cnaePrincipal || "",
       cnaesSecundarios: dados.cnaesSecundarios || [],
-      tipoAtividade: dados.tipoAtividade || 'SERVICOS',
-      
+      tipoAtividade: dados.tipoAtividade || "SERVICOS",
+
       receitas: {
         servicos: dados.receitas?.servicos || 0,
         comercio: dados.receitas?.comercio || 0,
         locacao: dados.receitas?.locacao || 0,
         outros: dados.receitas?.outros || 0,
-        total: receitaTotal
+        total: receitaTotal,
       },
-      
+
       custos: {
         folhaTotal: dados.custos?.folhaTotal || 0,
         aluguel: dados.custos?.aluguel || 0,
         fornecedores: dados.custos?.fornecedores || 0,
         marketing: dados.custos?.marketing || 0,
         administrativo: dados.custos?.administrativo || 0,
-        total: (dados.custos?.folhaTotal || 0) +
-               (dados.custos?.aluguel || 0) +
-               (dados.custos?.fornecedores || 0) +
-               (dados.custos?.marketing || 0) +
-               (dados.custos?.administrativo || 0)
+        total:
+          (dados.custos?.folhaTotal || 0) +
+          (dados.custos?.aluguel || 0) +
+          (dados.custos?.fornecedores || 0) +
+          (dados.custos?.marketing || 0) +
+          (dados.custos?.administrativo || 0),
       },
-      
+
       trabalhista: {
         funcionarios: dados.trabalhista?.funcionarios || 0,
         salarioTotal: dados.trabalhista?.salarioTotal || 0,
         proLabore: dados.trabalhista?.proLabore || 0,
-        beneficios: dados.trabalhista?.beneficios || 0
+        beneficios: dados.trabalhista?.beneficios || 0,
       },
-      
+
       localizacao: {
-        municipio: dados.localizacao?.municipio || '',
-        uf: dados.localizacao?.uf || '',
-        municipioIBGE: dados.localizacao?.municipioIBGE || '0000000',
-        issAliquota: dados.localizacao?.issAliquota || 0.05
+        municipio: dados.localizacao?.municipio || "",
+        uf: dados.localizacao?.uf || "",
+        municipioIBGE: dados.localizacao?.municipioIBGE || "0000000",
+        issAliquota: dados.localizacao?.issAliquota || 0.05,
       },
-      
+
       fiscalAtual: {
         das: dados.fiscalAtual?.das || 0,
         irpj: dados.fiscalAtual?.irpj || 0,
@@ -232,94 +234,100 @@ export class DigitalTwinFiscal {
         iss: dados.fiscalAtual?.iss || 0,
         icms: dados.fiscalAtual?.icms || 0,
         inss: dados.fiscalAtual?.inss || 0,
-        total: (dados.fiscalAtual?.das || 0) * 12 +
-               (dados.fiscalAtual?.irpj || 0) * 12 +
-               (dados.fiscalAtual?.csll || 0) * 12 +
-               (dados.fiscalAtual?.pis || 0) * 12 +
-               (dados.fiscalAtual?.cofins || 0) * 12 +
-               (dados.fiscalAtual?.iss || 0) * 12 +
-               (dados.fiscalAtual?.icms || 0) * 12 +
-               (dados.fiscalAtual?.inss || 0) * 12
-      }
-    }
+        total:
+          (dados.fiscalAtual?.das || 0) * 12 +
+          (dados.fiscalAtual?.irpj || 0) * 12 +
+          (dados.fiscalAtual?.csll || 0) * 12 +
+          (dados.fiscalAtual?.pis || 0) * 12 +
+          (dados.fiscalAtual?.cofins || 0) * 12 +
+          (dados.fiscalAtual?.iss || 0) * 12 +
+          (dados.fiscalAtual?.icms || 0) * 12 +
+          (dados.fiscalAtual?.inss || 0) * 12,
+      },
+    };
   }
-  
+
   /**
    * Calcula o Fator R da empresa
    */
   calcularFatorR(): number {
-    return calcularFatorR(this.empresa.custos.folhaTotal, this.empresa.receitas.total)
+    return calcularFatorR(
+      this.empresa.custos.folhaTotal,
+      this.empresa.receitas.total,
+    );
   }
-  
+
   /**
    * Identifica qual anexo do Simples se aplica (Async)
    */
-  async identificarAnexoSimples(): Promise<'I' | 'II' | 'III' | 'IV' | 'V'> {
-    const fatorR = this.calcularFatorR()
-    return determinarAnexo(this.empresa.cnaePrincipal, fatorR)
+  async identificarAnexoSimples(): Promise<"I" | "II" | "III" | "IV" | "V"> {
+    const fatorR = this.calcularFatorR();
+    return determinarAnexo(this.empresa.cnaePrincipal, fatorR);
   }
-  
+
   /**
    * Simula um cenário fiscal específico
    */
   async simularCenario(
-    regime: 'SIMPLES_NACIONAL' | 'LUCRO_PRESUMIDO' | 'LUCRO_REAL',
-    estrutura: 'UNICA' | 'DUAS_EMPRESAS' | 'HOLDING' = 'UNICA',
-    anexo?: 'I' | 'II' | 'III' | 'IV' | 'V'
+    regime: "SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL",
+    estrutura: "UNICA" | "DUAS_EMPRESAS" | "HOLDING" = "UNICA",
+    anexo?: "I" | "II" | "III" | "IV" | "V",
   ): Promise<CenarioSimulacao> {
-    const restricoes: string[] = []
-    let viavel = true
-    
-    const receita = this.empresa.receitas.total
-    const folha = this.empresa.custos.folhaTotal
-    
+    const restricoes: string[] = [];
+    let viavel = true;
+
+    const receita = this.empresa.receitas.total;
+    const folha = this.empresa.custos.folhaTotal;
+
     // Verificar restrições do Simples Nacional
-    if (regime === 'SIMPLES_NACIONAL') {
+    if (regime === "SIMPLES_NACIONAL") {
       if (receita > LIMITES.SIMPLES_NACIONAL) {
-        restricoes.push('Faturamento excede limite de R$ 4,8M do Simples Nacional')
-        viavel = false
+        restricoes.push(
+          "Faturamento excede limite de R$ 4,8M do Simples Nacional",
+        );
+        viavel = false;
       }
-      if (this.empresa.naturezaJuridica === 'SA') {
-        restricoes.push('S.A. não pode optar pelo Simples Nacional')
-        viavel = false
+      if (this.empresa.naturezaJuridica === "SA") {
+        restricoes.push("S.A. não pode optar pelo Simples Nacional");
+        viavel = false;
       }
     }
-    
+
     // Verificar restrições do MEI
-    if (this.empresa.naturezaJuridica === 'MEI' && receita > LIMITES.MEI) {
-      restricoes.push('MEI excede limite de faturamento')
-      viavel = false
+    if (this.empresa.naturezaJuridica === "MEI" && receita > LIMITES.MEI) {
+      restricoes.push("MEI excede limite de faturamento");
+      viavel = false;
     }
-    
-    let impostoTotal = 0
-    const detalhes: CenarioSimulacao['detalhes'] = {}
-    
+
+    let impostoTotal = 0;
+    const detalhes: CenarioSimulacao["detalhes"] = {};
+
     // Calcular impostos por regime
-    if (regime === 'SIMPLES_NACIONAL' && viavel) {
-      const anexoCalculo = anexo || await this.identificarAnexoSimples()
-      
+    if (regime === "SIMPLES_NACIONAL" && viavel) {
+      const anexoCalculo = anexo || (await this.identificarAnexoSimples());
+
       try {
         const simples = await calcularSimplesNacionalV2(
-          receita, 
-          anexoCalculo, 
+          receita,
+          anexoCalculo,
           folha,
-          this.empresa.localizacao.municipioIBGE
-        )
-        
-        impostoTotal = simples.impostoAnual
-        detalhes.das = simples.valorDAS
-        detalhes.cpp = simples.detalhes.cpp
-        detalhes.iss = simples.detalhes.iss
-        detalhes.icms = simples.detalhes.icms
+          this.empresa.localizacao.municipioIBGE,
+        );
+
+        impostoTotal = simples.impostoAnual;
+        detalhes.das = simples.valorDAS;
+        detalhes.cpp = simples.detalhes.cpp;
+        detalhes.iss = simples.detalhes.iss;
+        detalhes.icms = simples.detalhes.icms;
       } catch (error) {
         // Fallback caso não encontre faixas (ex: seed não rodou)
-        console.error('Erro no cálculo Simples V2:', error)
-        viavel = false
-        restricoes.push('Erro técnico ao calcular Simples Nacional')
+        console.error("Erro no cálculo Simples V2:", error);
+        viavel = false;
+        restricoes.push("Erro técnico ao calcular Simples Nacional");
       }
     }
-    
-    if (regime === 'LUCRO_PRESUMIDO') {
+
+    if (regime === "LUCRO_PRESUMIDO") {
       try {
         const presumido = await calcularLucroPresumidoV2({
           receitaBruta12m: receita,
@@ -328,141 +336,155 @@ export class DigitalTwinFiscal {
           receitaServicos: this.empresa.receitas.servicos,
           receitaComercio: this.empresa.receitas.comercio,
           receitaLocacao: this.empresa.receitas.locacao,
-          municipioIBGE: this.empresa.localizacao.municipioIBGE
-        })
-        
-        impostoTotal = presumido.totalAnual
-        detalhes.irpj = presumido.impostos.irpj
-        detalhes.adicionalIRPJ = presumido.impostos.adicionalIRPJ
-        detalhes.csll = presumido.impostos.csll
-        detalhes.pis = presumido.impostos.pis
-        detalhes.cofins = presumido.impostos.cofins
-        detalhes.iss = presumido.impostos.iss
-        detalhes.cpp = presumido.impostos.cpp
+          municipioIBGE: this.empresa.localizacao.municipioIBGE,
+        });
+
+        impostoTotal = presumido.totalAnual;
+        detalhes.irpj = presumido.impostos.irpj;
+        detalhes.adicionalIRPJ = presumido.impostos.adicionalIRPJ;
+        detalhes.csll = presumido.impostos.csll;
+        detalhes.pis = presumido.impostos.pis;
+        detalhes.cofins = presumido.impostos.cofins;
+        detalhes.iss = presumido.impostos.iss;
+        detalhes.cpp = presumido.impostos.cpp;
       } catch (error) {
-        console.error('Erro no cálculo Presumido V2:', error)
-        viavel = false
+        console.error("Erro no cálculo Presumido V2:", error);
+        viavel = false;
       }
     }
-    
-    if (regime === 'LUCRO_REAL') {
+
+    if (regime === "LUCRO_REAL") {
       try {
         const real = calcularLucroReal({
           receitaBruta12m: receita,
           folhaPagamento12m: folha,
           tipoAtividade: this.empresa.tipoAtividade,
-          custosTotais: this.empresa.custos.total
-        })
-        
-        impostoTotal = real.totalAnual
-        detalhes.irpj = real.impostos.irpj
-        detalhes.adicionalIRPJ = real.impostos.adicionalIRPJ
-        detalhes.csll = real.impostos.csll
-        detalhes.pis = real.impostos.pis
-        detalhes.cofins = real.impostos.cofins
-        detalhes.cpp = real.impostos.cpp
+          custosTotais: this.empresa.custos.total,
+        });
+
+        impostoTotal = real.totalAnual;
+        detalhes.irpj = real.impostos.irpj;
+        detalhes.adicionalIRPJ = real.impostos.adicionalIRPJ;
+        detalhes.csll = real.impostos.csll;
+        detalhes.pis = real.impostos.pis;
+        detalhes.cofins = real.impostos.cofins;
+        detalhes.cpp = real.impostos.cpp;
       } catch (error) {
-        console.error('Erro no cálculo Real V2:', error)
-        viavel = false
+        console.error("Erro no cálculo Real V2:", error);
+        viavel = false;
       }
     }
-    
+
     // Estrutura DUAS_EMPRESAS
-    if (estrutura === 'DUAS_EMPRESAS') {
-      const receitaMetade = receita / 2
-      const folhaMetade = folha / 2
-      
-      if (receita > LIMITES.SIMPLES_NACIONAL && receitaMetade <= LIMITES.SIMPLES_NACIONAL) {
-        viavel = true
-        restricoes.length = 0 // Limpa restrição anterior
-        restricoes.push('Cenário hipotético - requer abertura de nova empresa')
-        
-        if (regime === 'SIMPLES_NACIONAL') {
-          const anexoCalc = anexo || await this.identificarAnexoSimples()
+    if (estrutura === "DUAS_EMPRESAS") {
+      const receitaMetade = receita / 2;
+      const folhaMetade = folha / 2;
+
+      if (
+        receita > LIMITES.SIMPLES_NACIONAL &&
+        receitaMetade <= LIMITES.SIMPLES_NACIONAL
+      ) {
+        viavel = true;
+        restricoes.length = 0; // Limpa restrição anterior
+        restricoes.push("Cenário hipotético - requer abertura de nova empresa");
+
+        if (regime === "SIMPLES_NACIONAL") {
+          const anexoCalc = anexo || (await this.identificarAnexoSimples());
           try {
-            const simples1 = await calcularSimplesNacionalV2(receitaMetade, anexoCalc, folhaMetade)
-            const simples2 = await calcularSimplesNacionalV2(receitaMetade, anexoCalc, folhaMetade)
-            impostoTotal = simples1.impostoAnual + simples2.impostoAnual
-            detalhes.das = impostoTotal
+            const simples1 = await calcularSimplesNacionalV2(
+              receitaMetade,
+              anexoCalc,
+              folhaMetade,
+            );
+            const simples2 = await calcularSimplesNacionalV2(
+              receitaMetade,
+              anexoCalc,
+              folhaMetade,
+            );
+            impostoTotal = simples1.impostoAnual + simples2.impostoAnual;
+            detalhes.das = impostoTotal;
           } catch (e) {
-            viavel = false
+            viavel = false;
           }
         }
       }
     }
-    
+
     // Estrutura HOLDING
-    if (estrutura === 'HOLDING') {
-      restricoes.push('Cenário hipotético - requer estrutura societária com Holding')
+    if (estrutura === "HOLDING") {
+      restricoes.push(
+        "Cenário hipotético - requer estrutura societária com Holding",
+      );
       // Benefício: 5% economia (simplificação por enquanto, até implementarmos Holding real)
-      impostoTotal = impostoTotal * 0.95
+      impostoTotal = impostoTotal * 0.95;
     }
-    
-    const impostoAtual = this.empresa.fiscalAtual.total || impostoTotal
-    const economia = impostoAtual - impostoTotal
-    const percentualEconomia = impostoAtual > 0 ? (economia / impostoAtual) * 100 : 0
-    
+
+    const impostoAtual = this.empresa.fiscalAtual.total || impostoTotal;
+    const economia = impostoAtual - impostoTotal;
+    const percentualEconomia =
+      impostoAtual > 0 ? (economia / impostoAtual) * 100 : 0;
+
     return {
-      id: `${regime}-${estrutura}-${anexo || 'N/A'}`,
+      id: `${regime}-${estrutura}-${anexo || "N/A"}`,
       nome: this.gerarNomeCenario(regime, estrutura, anexo),
       descricao: this.gerarDescricaoCenario(regime, estrutura, anexo),
       regime,
       estrutura,
       anexoSimples: anexo,
-      
+
       impostoTotal,
       aliquotaEfetiva: receita > 0 ? impostoTotal / receita : 0,
       impostoMensal: impostoTotal / 12,
-      
+
       detalhes,
-      
+
       economiaVsAtual: economia,
       percentualEconomia,
-      
+
       viavel,
-      restricoes
-    }
+      restricoes,
+    };
   }
-  
+
   /**
    * Determina os anexos permitidos com base no tipo de atividade
    */
-  private obterAnexosPermitidos(): ('I' | 'II' | 'III' | 'IV' | 'V')[] {
-    const tipo = this.empresa.tipoAtividade
-    const fatorR = this.calcularFatorR()
-    
+  private obterAnexosPermitidos(): ("I" | "II" | "III" | "IV" | "V")[] {
+    const tipo = this.empresa.tipoAtividade;
+    const fatorR = this.calcularFatorR();
+
     switch (tipo) {
-      case 'COMERCIO':
+      case "COMERCIO":
         // Comércio: Anexo I (maioria) ou Anexo II (posto de combustível)
-        return ['I', 'II']
-      
-      case 'INDUSTRIA':
+        return ["I", "II"];
+
+      case "INDUSTRIA":
         // Indústria: Anexo II
-        return ['II']
-      
-      case 'SERVICOS':
+        return ["II"];
+
+      case "SERVICOS":
         // Serviços: Anexo III (se Fator R >= 28%) ou Anexo V
         if (fatorR >= LIMITES.FATOR_R_IDEAL) {
-          return ['III'] // Fator R OK - Anexo III é melhor
+          return ["III"]; // Fator R OK - Anexo III é melhor
         } else {
-          return ['V'] // Fator R baixo - Anexo V obrigatório
+          return ["V"]; // Fator R baixo - Anexo V obrigatório
         }
-      
-      case 'LOCACAO':
+
+      case "LOCACAO":
         // Locação: Anexo III
-        return ['III']
-      
-      case 'MISTO':
+        return ["III"];
+
+      case "MISTO":
         // Atividade mista: simular serviços e comércio
         if (fatorR >= LIMITES.FATOR_R_IDEAL) {
-          return ['I', 'III'] // Pode usar Anexo I ou III
+          return ["I", "III"]; // Pode usar Anexo I ou III
         } else {
-          return ['I', 'V'] // Comércio (I) ou Serviços (V)
+          return ["I", "V"]; // Comércio (I) ou Serviços (V)
         }
-      
+
       default:
         // Fallback conservador
-        return ['V']
+        return ["V"];
     }
   }
 
@@ -470,372 +492,521 @@ export class DigitalTwinFiscal {
    * Roda TODAS as simulações possíveis (Async)
    */
   async rodarTodasSimulacoes(): Promise<CenarioSimulacao[]> {
-    const promises: Promise<CenarioSimulacao>[] = []
-    
-    const regimes: ('SIMPLES_NACIONAL' | 'LUCRO_PRESUMIDO' | 'LUCRO_REAL')[] = 
-      ['SIMPLES_NACIONAL', 'LUCRO_PRESUMIDO', 'LUCRO_REAL']
-    
-    const estruturas: ('UNICA' | 'DUAS_EMPRESAS' | 'HOLDING')[] = 
-      ['UNICA', 'DUAS_EMPRESAS', 'HOLDING']
-    
+    const promises: Promise<CenarioSimulacao>[] = [];
+
+    const regimes: ("SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL")[] = [
+      "SIMPLES_NACIONAL",
+      "LUCRO_PRESUMIDO",
+      "LUCRO_REAL",
+    ];
+
+    const estruturas: ("UNICA" | "DUAS_EMPRESAS" | "HOLDING")[] = [
+      "UNICA",
+      "DUAS_EMPRESAS",
+      "HOLDING",
+    ];
+
     // ANEXOS PERMITIDOS por tipo de atividade
-    const anexosPermitidos = this.obterAnexosPermitidos()
-    
+    const anexosPermitidos = this.obterAnexosPermitidos();
+
     for (const regime of regimes) {
       for (const estrutura of estruturas) {
-        if (regime === 'SIMPLES_NACIONAL') {
+        if (regime === "SIMPLES_NACIONAL") {
           // SIMULAR APENAS OS ANEXOS PERMITIDOS
           for (const anexo of anexosPermitidos) {
-            promises.push(this.simularCenario(regime, estrutura, anexo))
+            promises.push(this.simularCenario(regime, estrutura, anexo));
           }
         } else {
-          promises.push(this.simularCenario(regime, estrutura))
+          promises.push(this.simularCenario(regime, estrutura));
         }
       }
     }
-    
-    const cenarios = await Promise.all(promises)
-    
+
+    const cenarios = await Promise.all(promises);
+
     // Ordenar por economia (maior primeiro)
     return cenarios
-      .filter(c => c.viavel && c.impostoTotal > 0)
-      .sort((a, b) => b.economiaVsAtual - a.economiaVsAtual)
+      .filter((c) => c.viavel && c.impostoTotal > 0)
+      .sort((a, b) => b.economiaVsAtual - a.economiaVsAtual);
   }
-  
+
   /**
    * Encontra o melhor cenário
    */
   async encontrarMelhorCenario(): Promise<CenarioSimulacao> {
-    const cenarios = await this.rodarTodasSimulacoes()
-    return cenarios[0]
+    const cenarios = await this.rodarTodasSimulacoes();
+    return cenarios[0];
   }
-  
+
   /**
    * Calcula o Score Fiscal da empresa
    */
   async calcularScoreFiscal(): Promise<ScoreFiscal> {
-    const fatores: ScoreFiscal['fatores'] = []
-    let scoreTotal = 0
-    
+    const fatores: ScoreFiscal["fatores"] = [];
+    let scoreTotal = 0;
+
     // 1. Adequação do Regime (peso 30)
-    const melhorCenario = await this.encontrarMelhorCenario()
-    
+    const melhorCenario = await this.encontrarMelhorCenario();
+
     // Se não encontrou cenário viável ou imposto é zero, score baixo
     if (!melhorCenario) {
-        return {
-            score: 0,
-            classificacao: 'CRITICO',
-            fatores: [],
-            recomendacoes: ['Dados insuficientes para cálculo']
-        }
+      return {
+        score: 0,
+        classificacao: "CRITICO",
+        fatores: [],
+        recomendacoes: ["Dados insuficientes para cálculo"],
+      };
     }
 
-    const economiaPotencial = melhorCenario.economiaVsAtual / this.empresa.receitas.total
-    
-    let notaRegime = 100
-    if (economiaPotencial > 0.05) notaRegime = 60
-    if (economiaPotencial > 0.10) notaRegime = 40
-    if (economiaPotencial > 0.15) notaRegime = 20
-    
+    const economiaPotencial =
+      melhorCenario.economiaVsAtual / this.empresa.receitas.total;
+
+    let notaRegime = 100;
+    if (economiaPotencial > 0.05) notaRegime = 60;
+    if (economiaPotencial > 0.1) notaRegime = 40;
+    if (economiaPotencial > 0.15) notaRegime = 20;
+
     fatores.push({
-      fator: 'Adequação do Regime Tributário',
+      fator: "Adequação do Regime Tributário",
       peso: 30,
       nota: notaRegime,
-      observacao: economiaPotencial > 0.05 
-        ? `Potencial economia de ${(economiaPotencial * 100).toFixed(1)}% do faturamento`
-        : 'Regime adequado'
-    })
-    scoreTotal += notaRegime * 0.3
-    
+      observacao:
+        economiaPotencial > 0.05
+          ? `Potencial economia de ${(economiaPotencial * 100).toFixed(1)}% do faturamento`
+          : "Regime adequado",
+    });
+    scoreTotal += notaRegime * 0.3;
+
     // 2. Fator R (peso 25) - só para serviços
-    if (this.empresa.tipoAtividade === 'SERVICOS') {
-      const fatorR = this.calcularFatorR()
-      let notaFatorR = 100
-      if (fatorR < 0.28) notaFatorR = 50
-      if (fatorR < 0.20) notaFatorR = 30
-      if (fatorR < 0.10) notaFatorR = 10
-      
+    if (this.empresa.tipoAtividade === "SERVICOS") {
+      const fatorR = this.calcularFatorR();
+      let notaFatorR = 100;
+      if (fatorR < 0.28) notaFatorR = 50;
+      if (fatorR < 0.2) notaFatorR = 30;
+      if (fatorR < 0.1) notaFatorR = 10;
+
       fatores.push({
-        fator: 'Fator R',
+        fator: "Fator R",
         peso: 25,
         nota: notaFatorR,
-        observacao: fatorR >= 0.28 
-          ? 'Fator R adequado para Anexo III'
-          : `Fator R de ${(fatorR * 100).toFixed(1)}% - abaixo do ideal`
-      })
-      scoreTotal += notaFatorR * 0.25
+        observacao:
+          fatorR >= 0.28
+            ? "Fator R adequado para Anexo III"
+            : `Fator R de ${(fatorR * 100).toFixed(1)}% - abaixo do ideal`,
+      });
+      scoreTotal += notaFatorR * 0.25;
     }
-    
+
     // 3. Carga Tributária vs Setor (peso 20)
-    const cargaTributaria = (this.empresa.fiscalAtual.total / this.empresa.receitas.total) || 0
-    const mediaSetor = 0.12
-    let notaCarga = 100
-    if (cargaTributaria > mediaSetor * 1.2) notaCarga = 70
-    if (cargaTributaria > mediaSetor * 1.5) notaCarga = 40
-    if (cargaTributaria > mediaSetor * 2) notaCarga = 20
-    
+    const cargaTributaria =
+      this.empresa.fiscalAtual.total / this.empresa.receitas.total || 0;
+    const mediaSetor = 0.12;
+    let notaCarga = 100;
+    if (cargaTributaria > mediaSetor * 1.2) notaCarga = 70;
+    if (cargaTributaria > mediaSetor * 1.5) notaCarga = 40;
+    if (cargaTributaria > mediaSetor * 2) notaCarga = 20;
+
     fatores.push({
-      fator: 'Carga Tributária vs Setor',
+      fator: "Carga Tributária vs Setor",
       peso: 20,
       nota: notaCarga,
-      observacao: `Carga de ${(cargaTributaria * 100).toFixed(1)}% vs média de ${(mediaSetor * 100).toFixed(0)}%`
-    })
-    scoreTotal += notaCarga * 0.20
-    
+      observacao: `Carga de ${(cargaTributaria * 100).toFixed(1)}% vs média de ${(mediaSetor * 100).toFixed(0)}%`,
+    });
+    scoreTotal += notaCarga * 0.2;
+
     // 4. Regularidade Fiscal (peso 15)
     fatores.push({
-      fator: 'Regularidade Fiscal',
+      fator: "Regularidade Fiscal",
       peso: 15,
       nota: 90,
-      observacao: 'Empresa em situação regular'
-    })
-    scoreTotal += 90 * 0.15
-    
+      observacao: "Empresa em situação regular",
+    });
+    scoreTotal += 90 * 0.15;
+
     // 5. Oportunidades de Planejamento (peso 10)
-    const oportunidades = await this.detectarOportunidades()
-    const qtdOportunidades = oportunidades.length
-    let notaOportunidades = 100
-    if (qtdOportunidades > 0) notaOportunidades = 80
-    if (qtdOportunidades > 2) notaOportunidades = 60
-    if (qtdOportunidades > 4) notaOportunidades = 40
-    
+    const oportunidades = await this.detectarOportunidades();
+    const qtdOportunidades = oportunidades.length;
+    let notaOportunidades = 100;
+    if (qtdOportunidades > 0) notaOportunidades = 80;
+    if (qtdOportunidades > 2) notaOportunidades = 60;
+    if (qtdOportunidades > 4) notaOportunidades = 40;
+
     fatores.push({
-      fator: 'Oportunidades de Otimização',
+      fator: "Oportunidades de Otimização",
       peso: 10,
       nota: notaOportunidades,
-      observacao: qtdOportunidades > 0 
-        ? `${qtdOportunidades} oportunidades identificadas`
-        : 'Nenhuma oportunidade óbvia'
-    })
-    scoreTotal += notaOportunidades * 0.10
-    
+      observacao:
+        qtdOportunidades > 0
+          ? `${qtdOportunidades} oportunidades identificadas`
+          : "Nenhuma oportunidade óbvia",
+    });
+    scoreTotal += notaOportunidades * 0.1;
+
     // Classificação
-    let classificacao: ScoreFiscal['classificacao']
-    if (scoreTotal >= 90) classificacao = 'OTIMO'
-    else if (scoreTotal >= 70) classificacao = 'BOM'
-    else if (scoreTotal >= 50) classificacao = 'REGULAR'
-    else if (scoreTotal >= 30) classificacao = 'RUIM'
-    else classificacao = 'CRITICO'
-    
+    let classificacao: ScoreFiscal["classificacao"];
+    if (scoreTotal >= 90) classificacao = "OTIMO";
+    else if (scoreTotal >= 70) classificacao = "BOM";
+    else if (scoreTotal >= 50) classificacao = "REGULAR";
+    else if (scoreTotal >= 30) classificacao = "RUIM";
+    else classificacao = "CRITICO";
+
     return {
       score: Math.round(scoreTotal),
       classificacao,
       fatores,
-      recomendacoes: this.gerarRecomendacoesScore(scoreTotal)
-    }
+      recomendacoes: this.gerarRecomendacoesScore(scoreTotal),
+    };
   }
-  
+
   /**
    * Detecta oportunidades de economia (Async)
    */
   async detectingOportunidades(): Promise<EstrategiaRecomendada[]> {
-    const estrategias: EstrategiaRecomendada[] = []
-    
+    const estrategias: EstrategiaRecomendada[] = [];
+
     // 1. Fator R
     const analiseFatorR = await analisarFatorR(
       this.empresa.receitas.total,
       this.empresa.custos.folhaTotal,
-      await this.identificarAnexoSimples()
-    )
-    
-    if (analiseFatorR.recomendacao === 'VALE_A_PENA') {
+      await this.identificarAnexoSimples(),
+    );
+
+    if (analiseFatorR.recomendacao === "VALE_A_PENA") {
       estrategias.push({
-        id: 'fator-r',
-        nome: 'Otimizar Fator R (Pró-labore)',
-        descricao: `Aumentar pró-labore em R$ ${analiseFatorR.prolaborNecessario.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/mês. Isso reduz o imposto do Anexo V para o III.`,
-        impacto: 'ALTO',
-        economiaAnual: analiseFatorR.economiaTributaria - analiseFatorR.custoINSSAdicional,
+        id: "fator-r",
+        nome: "Otimizar Fator R (Pró-labore)",
+        descricao: `Aumentar pró-labore em R$ ${analiseFatorR.prolaborNecessario.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}/mês. Isso reduz o imposto do Anexo V para o III.`,
+        impacto: "ALTO",
+        economiaAnual:
+          analiseFatorR.economiaTributaria - analiseFatorR.custoINSSAdicional,
         custoImplementacao: analiseFatorR.custoINSSAdicional,
         roi: analiseFatorR.rentabilidade,
-        prazoImplementacao: '30 dias',
+        prazoImplementacao: "30 dias",
         acoes: [
-          'Ajustar retirada de pró-labore',
-          'Recalcular DAS no Anexo III',
-          'Monitorar folha mensalmente'
-        ]
-      })
+          "Ajustar retirada de pró-labore",
+          "Recalcular DAS no Anexo III",
+          "Monitorar folha mensalmente",
+        ],
+      });
     }
-    
+
     // 2. Separação de Atividades
-    if (this.empresa.tipoAtividade === 'MISTO') {
-      const melhorCenario = await this.simularCenario('SIMPLES_NACIONAL', 'DUAS_EMPRESAS')
+    if (this.empresa.tipoAtividade === "MISTO") {
+      const melhorCenario = await this.simularCenario(
+        "SIMPLES_NACIONAL",
+        "DUAS_EMPRESAS",
+      );
       if (melhorCenario.economiaVsAtual > 10000) {
         estrategias.push({
-          id: 'separar-atividades',
-          nome: 'Separar Atividades em Duas Empresas',
-          descricao: 'Criar empresa separada para cada tipo de atividade pode reduzir impostos significativamente ao segregar receitas.',
-          impacto: 'ALTO',
+          id: "separar-atividades",
+          nome: "Separar Atividades em Duas Empresas",
+          descricao:
+            "Criar empresa separada para cada tipo de atividade pode reduzir impostos significativamente ao segregar receitas.",
+          impacto: "ALTO",
           economiaAnual: melhorCenario.economiaVsAtual,
           custoImplementacao: 5000,
           roi: (melhorCenario.economiaVsAtual / 5000) * 100,
-          prazoImplementacao: '60 dias',
+          prazoImplementacao: "60 dias",
           acoes: [
-            'Consultar contador sobre viabilidade societária',
-            'Abrir nova empresa para atividade secundária',
-            'Migrar contratos e faturamento gradualmente'
-          ]
-        })
+            "Consultar contador sobre viabilidade societária",
+            "Abrir nova empresa para atividade secundária",
+            "Migrar contratos e faturamento gradualmente",
+          ],
+        });
       }
     }
-    
+
     // 3. Mudança de Regime
-    const melhorCenario = await this.encontrarMelhorCenario()
-    if (melhorCenario && melhorCenario.regime !== this.empresa.regimeAtual && melhorCenario.economiaVsAtual > 5000) {
+    const melhorCenario = await this.encontrarMelhorCenario();
+    if (
+      melhorCenario &&
+      melhorCenario.regime !== this.empresa.regimeAtual &&
+      melhorCenario.economiaVsAtual > 5000
+    ) {
       estrategias.push({
-        id: 'mudar-regime',
-        nome: `Migrar para ${melhorCenario.regime.replace('_', ' ')}`,
-        descricao: `Mudar de ${this.empresa.regimeAtual} para ${melhorCenario.regime} pode economizar R$ ${melhorCenario.economiaVsAtual.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/ano.`,
-        impacto: 'ALTO',
+        id: "mudar-regime",
+        nome: `Migrar para ${melhorCenario.regime.replace("_", " ")}`,
+        descricao: `Mudar de ${this.empresa.regimeAtual} para ${melhorCenario.regime} pode economizar R$ ${melhorCenario.economiaVsAtual.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}/ano.`,
+        impacto: "ALTO",
         economiaAnual: melhorCenario.economiaVsAtual,
         custoImplementacao: 2000,
         roi: (melhorCenario.economiaVsAtual / 2000) * 100,
-        prazoImplementacao: '90 dias',
+        prazoImplementacao: "90 dias",
         acoes: [
-          'Analisar impacto operacional da mudança',
-          'Preparar documentação contábil',
-          'Solicitar alteração na Receita Federal (Prazo: Janeiro)'
-        ]
-      })
+          "Analisar impacto operacional da mudança",
+          "Preparar documentação contábil",
+          "Solicitar alteração na Receita Federal (Prazo: Janeiro)",
+        ],
+      });
     }
-    
-    // 4. ISS Alto (Simplificado, pois agora já usamos o real se disponível)
-    if (this.empresa.localizacao.issAliquota >= 0.05 && this.empresa.receitas.servicos > 0) {
-      const economiaISS = this.empresa.receitas.servicos * 0.03 // Diferença 5% -> 2%
+
+    // 4. ISS Alto
+    if (
+      this.empresa.localizacao.issAliquota >= 0.05 &&
+      this.empresa.receitas.servicos > 0
+    ) {
+      const economiaISS = this.empresa.receitas.servicos * 0.03;
       if (economiaISS > 5000) {
-          estrategias.push({
-            id: 'reduzir-iss',
-            nome: 'Avaliar Mudança de Município (ISS)',
-            descricao: `Seu município cobra 5% de ISS. Mudar para um município vizinho com 2% pode economizar R$ ${economiaISS.toLocaleString('pt-BR', {maximumFractionDigits: 0})}/ano.`,
-            impacto: 'MEDIO',
-            economiaAnual: economiaISS,
-            custoImplementacao: 3000,
-            roi: (economiaISS / 3000) * 100,
-            prazoImplementacao: '90 dias',
-            acoes: [
-              'Pesquisar municípios vizinhos com ISS de 2%',
-              'Avaliar viabilidade de mudança de sede',
-              'Planejar custos logísticos'
-            ]
-          })
+        estrategias.push({
+          id: "reduzir-iss",
+          nome: "Avaliar Mudança de Município (ISS)",
+          descricao: `Seu município cobra 5% de ISS. Mudar para um município vizinho com 2% pode economizar R$ ${economiaISS.toLocaleString(
+            "pt-BR",
+            { maximumFractionDigits: 0 },
+          )}/ano.`,
+          impacto: "MEDIO",
+          economiaAnual: economiaISS,
+          custoImplementacao: 3000,
+          roi: (economiaISS / 3000) * 100,
+          prazoImplementacao: "90 dias",
+          acoes: [
+            "Pesquisar municípios vizinhos com ISS de 2%",
+            "Avaliar viabilidade de mudança de sede",
+            "Planejar custos logísticos",
+          ],
+        });
       }
     }
-    
+
+    // OPORTUNIDADES INTELIGENTES EXTRAS
+    const receitaAnual = this.empresa.receitas.total;
+
+    // A. Oportunidade: Revisão de NCM / Recuperação de Crédito (Para Comércio)
+    if (
+      (this.empresa.tipoAtividade === "COMERCIO" ||
+        this.empresa.tipoAtividade === "MISTO") &&
+      receitaAnual > 500000
+    ) {
+      const economiaEstimada = receitaAnual * 0.01;
+      estrategias.push({
+        id: "revisao-ncm",
+        nome: "Revisão de NCM e Recuperação de ICMS/PIS/COFINS",
+        descricao:
+          "Produtos monofásicos tributados a maior geram direito a restituição dos últimos 5 anos. Uma auditoria no cadastro de produtos (NCM) pode recuperar caixa imediato.",
+        impacto: "ALTO",
+        economiaAnual: economiaEstimada,
+        custoImplementacao: 1500,
+        roi: (economiaEstimada / 1500) * 100,
+        prazoImplementacao: "60 dias",
+        acoes: [
+          "Exportar XMLs de entrada e saída",
+          "Cruzar NCMs com a base legal (monofásicos e ST)",
+          "Solicitar restituição via portal e-CAC",
+        ],
+      });
+    }
+
+    // B. Oportunidade: Limite do Simples Nacional vs Lucro Presumido
+    if (
+      this.empresa.regimeAtual === "SIMPLES_NACIONAL" &&
+      receitaAnual > 3600000 &&
+      receitaAnual <= 4800000
+    ) {
+      estrategias.push({
+        id: "transicao-presumido",
+        nome: "Planejamento de Saída do Simples (Risco de Sublimite)",
+        descricao:
+          "Seu faturamento está na faixa do sublimite (acima de R$ 3,6M). O ICMS/ISS passa a ser cobrado por fora, encarecendo a operação. É preciso preparar a transição para Lucro Presumido urgentemente.",
+        impacto: "ALTO",
+        economiaAnual: 25000,
+        custoImplementacao: 3000,
+        roi: (25000 / 3000) * 100,
+        prazoImplementacao: "Imediato",
+        acoes: [
+          "Realizar projeção de faturamento até dezembro",
+          "Simular folha e margem no Presumido",
+          "Ajustar precificação dos produtos para a nova carga",
+        ],
+      });
+    }
+
+    // C. Oportunidade: Equiparação Hospitalar para Clínicas
+    const cnaesSaude = [
+      "8630-5/03",
+      "8630-5/01",
+      "8630-5/02",
+      "8610-1/01",
+      "8610-1/02",
+      "8630-5/04",
+    ];
+    const isSaude =
+      cnaesSaude.includes(this.empresa.cnaePrincipal) ||
+      this.empresa.cnaesSecundarios.some((c) => cnaesSaude.includes(c));
+    if (
+      isSaude &&
+      (melhorCenario?.regime === "LUCRO_PRESUMIDO" ||
+        this.empresa.regimeAtual === "LUCRO_PRESUMIDO")
+    ) {
+      const economiaEstimada = receitaAnual * 0.08;
+      estrategias.push({
+        id: "equiparacao-hospitalar",
+        nome: "Equiparação Hospitalar (Clínicas)",
+        descricao:
+          "Clínicas médicas no Lucro Presumido podem reduzir a base de cálculo do IRPJ de 32% para 8% e CSLL de 32% para 12%, caso atendam às normas da Anvisa.",
+        impacto: "ALTO",
+        economiaAnual: economiaEstimada,
+        custoImplementacao: 5000,
+        roi: (economiaEstimada / 5000) * 100,
+        prazoImplementacao: "120 dias",
+        acoes: [
+          "Obter alvará sanitário adequado (Anvisa)",
+          "Adequar contrato social para serviços hospitalares",
+          "Ajustar apuração fiscal na Receita",
+        ],
+      });
+    }
+
+    // D. Benefícios Fiscais Estaduais (Desenvolve)
+    if (this.empresa.tipoAtividade === "INDUSTRIA" && receitaAnual > 1000000) {
+      const economiaEstimada = receitaAnual * 0.03;
+      estrategias.push({
+        id: "beneficio-estadual",
+        nome: "Mapeamento de Incentivos Fiscais Estaduais",
+        descricao:
+          "Indústrias costumam ter acesso a diferimento ou crédito presumido de ICMS dependendo do estado onde operam.",
+        impacto: "MEDIO",
+        economiaAnual: economiaEstimada,
+        custoImplementacao: 4000,
+        roi: (economiaEstimada / 4000) * 100,
+        prazoImplementacao: "90 dias",
+        acoes: [
+          "Mapear legislação estadual para a NCM principal",
+          "Montar dossiê de solicitação na SEFAZ",
+          "Ajustar emissão de notas fiscais (CST)",
+        ],
+      });
+    }
+
     // Ordenar por economia
-    return estrategias.sort((a, b) => b.economiaAnual - a.economiaAnual)
+    return estrategias.sort((a, b) => b.economiaAnual - a.economiaAnual);
   }
 
   // Alias para manter compatibilidade com código antigo se necessário
   async detectarOportunidades() {
-      return this.detectingOportunidades()
+    return this.detectingOportunidades();
   }
-  
+
   /**
    * Gera diagnóstico completo (Async)
    */
   async gerarDiagnostico(): Promise<DiagnosticoFiscal> {
-    const score = await this.calcularScoreFiscal()
-    const oportunidades = await this.detectingOportunidades()
-    const problemas: string[] = []
-    
+    const score = await this.calcularScoreFiscal();
+    const oportunidades = await this.detectingOportunidades();
+    const problemas: string[] = [];
+
     // Detectar problemas
     if (score.score < 50) {
-      problemas.push('Estrutura tributária ineficiente')
+      problemas.push("Estrutura tributária ineficiente");
     }
-    
-    if (this.empresa.receitas.total > LIMITES.SIMPLES_NACIONAL && this.empresa.regimeAtual === 'SIMPLES_NACIONAL') {
-      problemas.push('Faturamento excede limite do Simples Nacional')
+
+    if (
+      this.empresa.receitas.total > LIMITES.SIMPLES_NACIONAL &&
+      this.empresa.regimeAtual === "SIMPLES_NACIONAL"
+    ) {
+      problemas.push("Faturamento excede limite do Simples Nacional");
     }
-    
-    const fatorR = this.calcularFatorR()
-    if (fatorR < 0.28 && this.empresa.tipoAtividade === 'SERVICOS') {
-      problemas.push('Fator R abaixo do ideal para serviços (Anexo V)')
+
+    const fatorR = this.calcularFatorR();
+    if (fatorR < 0.28 && this.empresa.tipoAtividade === "SERVICOS") {
+      problemas.push("Fator R abaixo do ideal para serviços (Anexo V)");
     }
-    
-    if (this.empresa.fiscalAtual.total > this.empresa.receitas.total * 0.20) {
-      problemas.push('Carga tributária superior a 20% do faturamento')
+
+    if (this.empresa.fiscalAtual.total > this.empresa.receitas.total * 0.2) {
+      problemas.push("Carga tributária superior a 20% do faturamento");
     }
-    
+
     // Classificar risco
-    let risco: DiagnosticoFiscal['riscoFiscal']
-    if (score.score < 30) risco = 'CRITICO'
-    else if (score.score < 50) risco = 'ALTO'
-    else if (score.score < 70) risco = 'MEDIO'
-    else risco = 'BAIXO'
-    
+    let risco: DiagnosticoFiscal["riscoFiscal"];
+    if (score.score < 30) risco = "CRITICO";
+    else if (score.score < 50) risco = "ALTO";
+    else if (score.score < 70) risco = "MEDIO";
+    else risco = "BAIXO";
+
     // Classificar eficiência
-    let eficiencia: DiagnosticoFiscal['eficienciaTributaria']
-    if (score.score >= 80) eficiencia = 'ALTA'
-    else if (score.score >= 50) eficiencia = 'MEDIA'
-    else eficiencia = 'BAIXA'
-    
+    let eficiencia: DiagnosticoFiscal["eficienciaTributaria"];
+    if (score.score >= 80) eficiencia = "ALTA";
+    else if (score.score >= 50) eficiencia = "MEDIA";
+    else eficiencia = "BAIXA";
+
     // Classificar potencial economia
-    let potencial: DiagnosticoFiscal['potencialEconomia']
-    const economiaTotal = oportunidades.reduce((sum, o) => sum + o.economiaAnual, 0)
-    if (economiaTotal > 50000) potencial = 'ALTO'
-    else if (economiaTotal > 10000) potencial = 'MEDIO'
-    else potencial = 'BAIXO'
-    
+    let potencial: DiagnosticoFiscal["potencialEconomia"];
+    const economiaTotal = oportunidades.reduce(
+      (sum, o) => sum + o.economiaAnual,
+      0,
+    );
+    if (economiaTotal > 50000) potencial = "ALTO";
+    else if (economiaTotal > 10000) potencial = "MEDIO";
+    else potencial = "BAIXO";
+
     return {
       score,
       riscoFiscal: risco,
       eficienciaTributaria: eficiencia,
       potencialEconomia: potencial,
       problemasDetectados: problemas,
-      oportunidadesIdentificadas: oportunidades.map(o => o.nome)
-    }
+      oportunidadesIdentificadas: oportunidades.map((o) => o.nome),
+    };
   }
-  
+
   // Métodos auxiliares privados
-  
+
   private gerarNomeCenario(
-    regime: string, 
-    estrutura: string, 
-    anexo?: string
+    regime: string,
+    estrutura: string,
+    anexo?: string,
   ): string {
-    const regimeNome = regime.replace('_', ' ')
-    const estruturaNome = estrutura === 'UNICA' ? 'Empresa Única' : 
-                          estrutura === 'DUAS_EMPRESAS' ? '2 Empresas' : 'Holding'
-    const anexoNome = anexo ? ` - Anexo ${anexo}` : ''
-    
-    return `${regimeNome} | ${estruturaNome}${anexoNome}`
+    const regimeNome = regime.replace("_", " ");
+    const estruturaNome =
+      estrutura === "UNICA"
+        ? "Empresa Única"
+        : estrutura === "DUAS_EMPRESAS"
+          ? "2 Empresas"
+          : "Holding";
+    const anexoNome = anexo ? ` - Anexo ${anexo}` : "";
+
+    return `${regimeNome} | ${estruturaNome}${anexoNome}`;
   }
-  
+
   private gerarDescricaoCenario(
-    regime: string, 
-    estrutura: string, 
-    anexo?: string
+    regime: string,
+    estrutura: string,
+    anexo?: string,
   ): string {
-    let descricao = `Simulação com regime ${regime.replace('_', ' ')}`
-    
-    if (estrutura === 'DUAS_EMPRESAS') {
-      descricao += ', dividindo faturamento em duas empresas'
-    } else if (estrutura === 'HOLDING') {
-      descricao += ', com estrutura de Holding familiar'
+    let descricao = `Simulação com regime ${regime.replace("_", " ")}`;
+
+    if (estrutura === "DUAS_EMPRESAS") {
+      descricao += ", dividindo faturamento em duas empresas";
+    } else if (estrutura === "HOLDING") {
+      descricao += ", com estrutura de Holding familiar";
     }
-    
+
     if (anexo) {
-      descricao += `, utilizando Anexo ${anexo} do Simples Nacional`
+      descricao += `, utilizando Anexo ${anexo} do Simples Nacional`;
     }
-    
-    return descricao
+
+    return descricao;
   }
-  
+
   private gerarRecomendacoesScore(score: number): string[] {
-    const recomendacoes: string[] = []
-    
+    const recomendacoes: string[] = [];
+
     if (score < 50) {
-      recomendacoes.push('Recomendamos uma revisão completa da estrutura tributária')
+      recomendacoes.push(
+        "Recomendamos uma revisão completa da estrutura tributária",
+      );
     }
-    
+
     if (score < 70) {
-      recomendacoes.push('Existem oportunidades de economia identificadas')
+      recomendacoes.push("Existem oportunidades de economia identificadas");
     }
-    
+
     if (score < 90) {
-      recomendacoes.push('Consulte um contador especializado para implementar as estratégias sugeridas')
+      recomendacoes.push(
+        "Consulte um contador especializado para implementar as estratégias sugeridas",
+      );
     }
-    
-    return recomendacoes
+
+    return recomendacoes;
   }
 }
 
@@ -843,22 +1014,26 @@ export class DigitalTwinFiscal {
 // FUNÇÕES DE CONVENIÊNCIA
 // ============================================
 
-export function criarDigitalTwin(dadosEmpresa: Partial<EmpresaModel>): DigitalTwinFiscal {
-  return new DigitalTwinFiscal(dadosEmpresa)
+export function criarDigitalTwin(
+  dadosEmpresa: Partial<EmpresaModel>,
+): DigitalTwinFiscal {
+  return new DigitalTwinFiscal(dadosEmpresa);
 }
 
-export async function rodarAnaliseCompleta(dadosEmpresa: Partial<EmpresaModel>) {
-  const twin = new DigitalTwinFiscal(dadosEmpresa)
-  
-  const diagnostico = await twin.gerarDiagnostico()
-  const melhorCenario = await twin.encontrarMelhorCenario()
-  const todasSimulacoes = await twin.rodarTodasSimulacoes()
-  const estrategias = await twin.detectingOportunidades()
-  
+export async function rodarAnaliseCompleta(
+  dadosEmpresa: Partial<EmpresaModel>,
+) {
+  const twin = new DigitalTwinFiscal(dadosEmpresa);
+
+  const diagnostico = await twin.gerarDiagnostico();
+  const melhorCenario = await twin.encontrarMelhorCenario();
+  const todasSimulacoes = await twin.rodarTodasSimulacoes();
+  const estrategias = await twin.detectingOportunidades();
+
   return {
     diagnostico,
     melhorCenario,
     todasSimulacoes,
-    estrategias
-  }
+    estrategias,
+  };
 }
