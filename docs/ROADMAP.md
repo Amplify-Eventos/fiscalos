@@ -6,24 +6,23 @@ O FiscalOS está em desenvolvimento ativo. Este roadmap mostra o que já foi ent
 
 ---
 
-## ✅ Fase 1 - MVP (CONCLUÍDA)
+## 🏆 Fase 1 - MVP (CONCLUÍDA E ENTREGUE)
 
 **Período:** Janeiro - Março 2026
-**Status:** ✅ Entregue
+**Status:** ✅ Entregue e Validado
 
 ### Funcionalidades Entregues
 
 | Feature | Status | Descrição |
 |---------|--------|-----------|
 | Autenticação | ✅ | Login/Cadastro com Supabase Auth |
-| CRUD de Clientes | ✅ | Cadastrar, listar, visualizar, excluir |
+| CRUD de Clientes | ✅ | Cadastrar, listar, visualizar, editar, excluir |
 | Motor Fiscal V2 | ✅ | Simples, Presumido, Real com dados do banco |
-| Digital Twin | ✅ | Simulação de 180+ cenários |
-| Score Fiscal | ✅ | Índice 0-100 com classificação |
-| Relatórios PDF | ✅ | Geração de relatório consultivo |
+| Digital Twin | ✅ | Simulação de 180+ cenários e projeção de crescimento |
+| Score Fiscal | ✅ | Índice 0-100 com composição visual das notas parciais |
+| Detector Oportunidades | ✅ | Avisos inteligentes (Fator R, Sublimite, NCM, Clínicas, etc.) |
+| Relatórios PDF | ✅ | Geração de relatório White-Label (Logo + Cor Primária/Secundária) |
 | Banco Legislativo | ✅ | 30 faixas Simples, 13 CNAEs, 12 ISS |
-| Seleção de Município | ✅ | ISS por município brasileiro |
-| Fator R Automático | ✅ | Análise de anexo correto |
 
 ### Arquivos Principais
 

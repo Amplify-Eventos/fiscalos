@@ -24,7 +24,7 @@ O MVP do FiscalOS é um sistema funcional que permite ao contador:
 - [x] Criar novo cliente (formulário 4 etapas)
 - [x] Ver detalhes do cliente
 - [x] Excluir cliente
-- [ ] Editar cliente (pendente)
+- [x] Editar cliente
 
 ### 3. Motor Fiscal
 - [x] Simples Nacional (Anexos I-V)
@@ -37,14 +37,18 @@ O MVP do FiscalOS é um sistema funcional que permite ao contador:
 ### 4. Digital Twin
 - [x] Modelagem de empresa
 - [x] Simulação de cenários
-- [x] Score Fiscal (0-100)
-- [x] Detecção de oportunidades
-- [x] Estratégias de economia
+- [x] Score Fiscal (0-100) com Composição Detalhada
+- [x] Detecção de oportunidades (Fator R, Separar Ativ., Mudança Regime, ISS)
+- [x] Oportunidades Avançadas (Revisão NCM, Sublimite, Equip. Hospitalar, ICMS Estadual)
+- [x] Projeção de Crescimento Futuro (Planejamento Tributário)
 
 ### 5. Relatórios
 - [x] PDF com análise completa
 - [x] Plano de ação
 - [x] Top 10 simulações
+- [x] Personalização White-Label (Logo, Cor Primária e Secundária)
+- [x] Projeções de Crescimento (10%, 20%, 30%)
+- [x] Detalhamento Visual da Composição do Score Fiscal
 
 ### 6. Banco Legislativo
 - [x] 30 faixas do Simples Nacional
@@ -162,10 +166,14 @@ Otimiza Fiscal LTDA
 - Simulações
 - Geração de PDF
 
-### Semana 9: Refinamentos (ATUAL)
-- Correção de anexos por tipo
-- ISS dinâmico por município
-- Testes finais
+### Semana 9: Refinamentos e Valor Adicionado (ATUAL)
+- [x] Correção de anexos por tipo
+- [x] ISS dinâmico por município
+- [x] Configurações White-Label (Logo e Duas Cores)
+- [x] Detector de Oportunidades Premium
+- [x] Projeção de Crescimento Futuro
+- [x] Detalhamento Visual do Score Fiscal
+- [x] Seed de Clientes de Teste Abrangentes
 
 ---
 

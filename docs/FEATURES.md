@@ -62,7 +62,7 @@ Motor de cálculo 100% fiel à legislação brasileira.
 
 ## 📊 Score Fiscal (0-100)
 
-Índice de eficiência tributária da empresa.
+Índice de eficiência tributária da empresa com **detalhamento visual da composição** exibindo barras de progresso parciais para cada critério (Adequação do regime, Fator R, Carga tributária vs Setor, etc).
 
 ### Fatores do Score
 
