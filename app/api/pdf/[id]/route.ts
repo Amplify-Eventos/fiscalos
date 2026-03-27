@@ -116,6 +116,7 @@ export async function GET(
       10,
     );
     const estrategias = await digitalTwin.detectingOportunidades();
+    const projecoes = await digitalTwin.gerarProjecaoAnoSeguinte();
 
     // Configurar cores e dados para o PDF
     const scoreColors: Record<string, string> = {
@@ -267,6 +268,37 @@ export async function GET(
   `
       : ""
   }
+
+  
+  <div class="section">
+    <div class="section-title" style="border-color: #6366f1; color: #4338ca;">Planejamento Tributário Futuro (Projeção)</div>
+    <p style="font-size: 14px; color: #475569; margin-bottom: 15px;">O que acontece com os impostos caso o faturamento da empresa cresça nos próximos 12 meses?</p>
+    <div style="display: flex; gap: 15px;">
+      ${projecoes
+        .map(
+          (proj) => `
+        <div style="flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; background: #f8fafc;">
+          <div style="font-size: 16px; font-weight: bold; color: #1e293b; margin-bottom: 5px;">Crescer ${proj.percentualCrescimento}%</div>
+          <div style="font-size: 13px; color: #64748b; margin-bottom: 10px;">Faturamento: R$ ${proj.faturamentoProjetado.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}</div>
+          
+          <div style="font-weight: bold; color: #4338ca; font-size: 15px;">Imposto: R$ ${proj.impostoProjetado.toLocaleString("pt-BR", { maximumFractionDigits: 0 })}</div>
+          <div style="font-size: 11px; color: #64748b; margin-bottom: 10px;">Carga Efetiva: ${(proj.aliquotaEfetiva * 100).toFixed(1)}% | Regime ideal: ${proj.melhorRegime.replace("_", " ")}</div>
+          
+          ${proj.alertas
+            .map(
+              (alerta) => `
+            <div style="background: #fef3c7; border-left: 3px solid #f59e0b; padding: 8px; font-size: 11px; color: #92400e; margin-top: 5px; font-weight: 500;">
+              ${alerta}
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
+      `,
+        )
+        .join("")}
+    </div>
+  </div>
 
   <div class="section">
     <div class="section-title">Simulações de Cenários (Top 10)</div>

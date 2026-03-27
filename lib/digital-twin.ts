@@ -21,6 +21,15 @@ import {
 // TIPOS E INTERFACES
 // ============================================
 
+export interface ProjecaoFutura {
+  percentualCrescimento: number;
+  faturamentoProjetado: number;
+  impostoProjetado: number;
+  aliquotaEfetiva: number;
+  alertas: string[];
+  melhorRegime: string;
+}
+
 export interface EmpresaModel {
   // Identificação
   id: string;
@@ -948,6 +957,78 @@ export class DigitalTwinFiscal {
     };
   }
 
+  /**
+   * Projeta cenários futuros baseados em crescimento de faturamento (Async)
+   */
+  async projetarCrescimento(percentual: number): Promise<ProjecaoFutura> {
+    const crescimento = 1 + percentual / 100;
+
+    // Criar uma cópia da empresa com valores inflados
+    const empresaProjetada: Partial<EmpresaModel> = {
+      ...this.empresa,
+      receitas: {
+        servicos: this.empresa.receitas.servicos * crescimento,
+        comercio: this.empresa.receitas.comercio * crescimento,
+        locacao: this.empresa.receitas.locacao * crescimento,
+        outros: this.empresa.receitas.outros * crescimento,
+        total: this.empresa.receitas.total * crescimento,
+      },
+      custos: {
+        ...this.empresa.custos,
+        folhaTotal: this.empresa.custos.folhaTotal * crescimento, // Assume folha crescendo com faturamento
+        total: this.empresa.custos.total * crescimento,
+      },
+    };
+
+    const twinProjetado = new DigitalTwinFiscal(empresaProjetada);
+    const melhorCenarioProjetado = await twinProjetado.encontrarMelhorCenario();
+
+    const alertas: string[] = [];
+
+    // Alertas de sublimite e limite
+    if (
+      this.empresa.receitas.total <= LIMITES.SIMPLES_NACIONAL &&
+      empresaProjetada.receitas!.total > LIMITES.SIMPLES_NACIONAL
+    ) {
+      alertas.push(
+        `Crescimento de ${percentual}% fará a empresa estourar o limite de R$ 4,8M do Simples Nacional.`,
+      );
+    } else if (
+      this.empresa.receitas.total <= 3600000 &&
+      empresaProjetada.receitas!.total > 3600000
+    ) {
+      alertas.push(
+        `Crescimento de ${percentual}% fará a empresa estourar o sublimite de R$ 3,6M. ICMS e ISS serão cobrados por fora.`,
+      );
+    }
+
+    if (melhorCenarioProjetado.regime !== this.empresa.regimeAtual) {
+      alertas.push(
+        `Com faturamento de R$ ${empresaProjetada.receitas!.total.toLocaleString("pt-BR")}, o regime ${melhorCenarioProjetado.regime.replace("_", " ")} passará a ser mais vantajoso.`,
+      );
+    }
+
+    return {
+      percentualCrescimento: percentual,
+      faturamentoProjetado: empresaProjetada.receitas!.total,
+      impostoProjetado: melhorCenarioProjetado.impostoTotal,
+      aliquotaEfetiva: melhorCenarioProjetado.aliquotaEfetiva,
+      alertas,
+      melhorRegime: melhorCenarioProjetado.regime,
+    };
+  }
+
+  /**
+   * Gera um conjunto de projeções (10%, 20%, 30%)
+   */
+  async gerarProjecaoAnoSeguinte(): Promise<ProjecaoFutura[]> {
+    return Promise.all([
+      this.projetarCrescimento(10),
+      this.projetarCrescimento(20),
+      this.projetarCrescimento(30),
+    ]);
+  }
+
   // Métodos auxiliares privados
 
   private gerarNomeCenario(
@@ -1036,4 +1117,9 @@ export async function rodarAnaliseCompleta(
     todasSimulacoes,
     estrategias,
   };
+}
+
+export async function gerarProjecao(dadosEmpresa: Partial<EmpresaModel>) {
+  const twin = new DigitalTwinFiscal(dadosEmpresa);
+  return twin.gerarProjecaoAnoSeguinte();
 }

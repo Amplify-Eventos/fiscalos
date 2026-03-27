@@ -113,12 +113,14 @@ export default async function ClienteDetalhesPage({
   // Rodar diagnstico para obter score
   let diagnostico = null;
   let simulacoes: any[] = [];
+  let projecoes: any[] = [];
 
   try {
     diagnostico = await digitalTwin.gerarDiagnostico();
     const todosCenarios = await digitalTwin.rodarTodasSimulacoes();
 
     // Filtra e formata para o gráfico
+    projecoes = await digitalTwin.gerarProjecaoAnoSeguinte();
     simulacoes = todosCenarios
       .filter((c) => c.viavel && c.impostoTotal > 0)
       .slice(0, 4)
@@ -429,6 +431,61 @@ export default async function ClienteDetalhesPage({
                         <span className="text-xs text-slate-400">/100</span>
                       </div>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* PROJEÇÃO TRIBUTÁRIA FUTURA */}
+        {projecoes && projecoes.length > 0 && (
+          <Card className="mb-6 border-indigo-100 shadow-sm">
+            <CardHeader className="border-b bg-indigo-50/30 pb-4">
+              <CardTitle className="text-xl flex items-center text-slate-800">
+                <TrendingUp className="h-5 w-5 mr-2 text-indigo-600" />
+                Planejamento Tributário Futuro (Projeção)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <p className="text-sm text-slate-600 mb-4">
+                O que acontece com os impostos se a empresa crescer?
+              </p>
+              <div className="grid md:grid-cols-3 gap-4">
+                {projecoes.map((proj: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-50 border border-slate-200 rounded-lg p-4"
+                  >
+                    <div className="font-bold text-lg text-slate-800 mb-1">
+                      Crescimento de {proj.percentualCrescimento}%
+                    </div>
+                    <div className="text-sm text-slate-500 mb-3">
+                      Faturamento: R${" "}
+                      {proj.faturamentoProjetado.toLocaleString("pt-BR", {
+                        maximumFractionDigits: 0,
+                      })}
+                    </div>
+                    <div className="text-indigo-700 font-semibold mb-1">
+                      Imposto: R${" "}
+                      {proj.impostoProjetado.toLocaleString("pt-BR", {
+                        maximumFractionDigits: 0,
+                      })}
+                    </div>
+                    <div className="text-xs text-slate-500 mb-3">
+                      Carga efetiva projetada:{" "}
+                      {(proj.aliquotaEfetiva * 100).toFixed(1)}%<br />
+                      Melhor Regime: {proj.melhorRegime.replace("_", " ")}
+                    </div>
+                    {proj.alertas.map((alerta: string, aIdx: number) => (
+                      <div
+                        key={aIdx}
+                        className="bg-amber-100 text-amber-800 text-[11px] p-2 rounded mt-2 font-medium flex items-start"
+                      >
+                        <AlertTriangle className="h-3 w-3 mr-1 mt-0.5 flex-shrink-0" />
+                        {alerta}
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
