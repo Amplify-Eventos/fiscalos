@@ -95,7 +95,7 @@ export default async function ClienteDetalhesPage({
       municipio: client.municipio || "",
       uf: client.uf || "",
       municipioIBGE: client.municipioIBGE || "3550308",
-      issAliquota: client.municipioIBGE === "4205407" ? 0.02 : 0.05,
+      issAliquota: client.issAliquota || 5.0,
     },
     fiscalAtual: {
       das: Number(client.currentDAS || 0),
