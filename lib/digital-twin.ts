@@ -304,8 +304,7 @@ export class DigitalTwinFiscal {
 
     // Verificar restrições do MEI
     if (this.empresa.naturezaJuridica === "MEI" && receita > LIMITES.MEI) {
-      restricoes.push("MEI excede limite de faturamento");
-      viavel = false;
+      restricoes.push("Necessário desenquadramento do MEI.");
     }
 
     let impostoTotal = 0;
