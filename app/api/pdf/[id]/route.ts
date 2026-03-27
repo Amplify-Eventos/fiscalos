@@ -30,12 +30,13 @@ export async function GET(
 
     const { data: userProfile } = await supabase
       .from('users')
-      .select('agencyName, agencyLogo, agencyColor, agencyWebsite')
+      .select('agencyName, agencyLogo, agencyColor, agencyColorSecondary, agencyWebsite')
       .eq('id', user.id)
       .single()
 
     const agencyName = userProfile?.agencyName || 'FiscalOS - Inteligência Tributária'
     const agencyColor = userProfile?.agencyColor || '#2563eb'
+    const agencyColorSecondary = userProfile?.agencyColorSecondary || '#1e40af'
     const agencyLogo = userProfile?.agencyLogo || ''
     const agencyWebsite = userProfile?.agencyWebsite || ''
 
@@ -118,7 +119,7 @@ export async function GET(
     body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #1e293b; max-width: 900px; margin: 0 auto; line-height: 1.5; }
     .header { border-bottom: 3px solid ${agencyColor}; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: end; }
     .title { font-size: 28px; color: ${agencyColor}; margin: 0; font-weight: 800; }
-    .subtitle { color: #64748b; margin-top: 5px; font-size: 14px; }
+    .subtitle { color: ${agencyColorSecondary}; margin-top: 5px; font-size: 14px; }
     
     .score-section { display: flex; gap: 30px; margin-bottom: 40px; background: #f8fafc; padding: 30px; border-radius: 12px; }
     .score-circle { width: 120px; height: 120px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; background: ${scoreColor}; flex-shrink: 0; }
@@ -132,7 +133,7 @@ export async function GET(
     .metric-value { font-size: 16px; font-weight: 600; color: #334155; }
     
     .section { margin-bottom: 40px; }
-    .section-title { font-size: 18px; font-weight: 700; color: ${agencyColor}; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; }
+    .section-title { font-size: 18px; font-weight: 700; color: ${agencyColorSecondary}; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid ${agencyColor}; }
     
     .best-scenario { background: #dcfce7; padding: 25px; border-radius: 12px; border-left: 5px solid #16a34a; margin-bottom: 30px; }
     .scenario-label { font-size: 12px; text-transform: uppercase; color: #15803d; font-weight: bold; }

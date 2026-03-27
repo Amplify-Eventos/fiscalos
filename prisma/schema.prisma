@@ -107,17 +107,18 @@ model simulations {
 }
 
 model users {
-  id            String    @id
-  email         String    @unique
-  name          String?
-  planTier      PlanTier  @default(FREE)
-  agencyName    String?
-  agencyLogo    String?
-  agencyColor   String?   @default("#2563eb")
-  agencyWebsite String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime
-  clients       clients[]
+  id                   String    @id
+  email                String    @unique
+  name                 String?
+  planTier             PlanTier  @default(FREE)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime
+  agencyColor          String?   @default("#2563eb")
+  agencyLogo           String?
+  agencyName           String?
+  agencyWebsite        String?
+  agencyColorSecondary String?   @default("#1e40af")
+  clients              clients[]
 }
 
 enum PlanTier {

@@ -19,7 +19,7 @@ export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: userProfile, error } = await supabase
     .from('users')
-    .select('agencyName, agencyLogo, agencyColor, agencyWebsite')
+    .select('agencyName, agencyLogo, agencyColor, agencyColorSecondary, agencyWebsite')
     .eq('id', user.id)
     .single()
 
@@ -30,6 +30,7 @@ export default async function SettingsPage() {
   const agencyName = userProfile?.agencyName || ''
   const agencyLogo = userProfile?.agencyLogo || ''
   const agencyColor = userProfile?.agencyColor || '#2563eb'
+  const agencyColorSecondary = userProfile?.agencyColorSecondary || '#1e40af'
   const agencyWebsite = userProfile?.agencyWebsite || ''
 
   return (
@@ -102,7 +103,7 @@ export default async function SettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="agencyColor" className="flex items-center text-slate-700">
-                    <Palette className="h-4 w-4 mr-2" /> Cor Principal da Marca (HEX)
+                    <Palette className="h-4 w-4 mr-2" /> Cor Primária da Marca (HEX)
                   </Label>
                   <div className="flex gap-2">
                     <Input 
@@ -119,10 +120,32 @@ export default async function SettingsPage() {
                       disabled
                     />
                   </div>
-                  <p className="text-xs text-slate-500">Essa cor será usada nas linhas, títulos e destaques do PDF.</p>
+                  <p className="text-xs text-slate-500">Essa cor será usada nas linhas e destaques principais do PDF.</p>
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="agencyColorSecondary" className="flex items-center text-slate-700">
+                    <Palette className="h-4 w-4 mr-2" /> Cor Secundária (HEX)
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input 
+                      id="agencyColorSecondary" 
+                      name="agencyColorSecondary" 
+                      type="color"
+                      defaultValue={agencyColorSecondary}
+                      className="w-14 p-1 h-10"
+                    />
+                    <Input 
+                      type="text" 
+                      defaultValue={agencyColorSecondary} 
+                      className="uppercase font-mono w-28"
+                      disabled
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500">Essa cor será usada em títulos e botões no PDF.</p>
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="agencyWebsite" className="flex items-center text-slate-700">
                     <Globe className="h-4 w-4 mr-2" /> Site do Escritório
                   </Label>

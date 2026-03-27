@@ -14,6 +14,7 @@ export async function updateSettingsAction(formData: FormData) {
   const agencyName = formData.get('agencyName') as string
   const agencyLogo = formData.get('agencyLogo') as string
   const agencyColor = formData.get('agencyColor') as string
+  const agencyColorSecondary = formData.get('agencyColorSecondary') as string
   const agencyWebsite = formData.get('agencyWebsite') as string
 
   const { error } = await supabase
@@ -22,6 +23,7 @@ export async function updateSettingsAction(formData: FormData) {
       agencyName,
       agencyLogo,
       agencyColor,
+      agencyColorSecondary,
       agencyWebsite,
       updatedAt: new Date().toISOString()
     })
