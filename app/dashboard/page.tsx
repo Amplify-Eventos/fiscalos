@@ -114,18 +114,20 @@ export default async function DashboardPage() {
         if (rev > 0) {
           const dados = mapClientToTwin(client);
           const twin = criarDigitalTwin(dados);
-          const todos = await twin.rodarTodasSimulacoes();
-          const validos = todos.filter((c) => c.viavel && c.impostoTotal > 0);
+          const diagnostico = await twin.gerarDiagnostico();
+          const estrategias = await twin.detectingOportunidades();
 
-          if (validos.length > 0 && validos[0].economiaVsAtual > 0) {
-            economiaTotal += validos[0].economiaVsAtual;
-            client.economiaPotencial = validos[0].economiaVsAtual;
+          const potencialTotal = estrategias.reduce(
+            (sum, est) => sum + est.economiaAnual,
+            0,
+          );
+
+          if (potencialTotal > 0) {
+            economiaTotal += potencialTotal;
+            client.economiaPotencial = potencialTotal;
           } else {
             client.economiaPotencial = 0;
           }
-
-          const diagnostico = await twin.gerarDiagnostico();
-          const estrategias = await twin.detectingOportunidades();
 
           client.score = diagnostico.score.score;
           client.status = diagnostico.score.classificacao;
