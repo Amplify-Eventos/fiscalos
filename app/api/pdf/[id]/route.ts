@@ -85,7 +85,7 @@ export async function GET(
         municipio: client.municipio || "",
         uf: client.uf || "",
         municipioIBGE: client.municipioIBGE || "3550308",
-        issAliquota: 0.05,
+        issAliquota: client.municipioIBGE === "4205407" ? 0.02 : 0.05,
       },
       fiscalAtual: {
         das: Number(client.currentDAS || 0),
