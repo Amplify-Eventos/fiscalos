@@ -96,6 +96,7 @@ export default function NovoClientePage() {
     currentCOFINS: "",
     currentISS: "",
     currentINSS: "",
+    issAliquota: "5.0",
   });
 
   const updateFormData = (field: string, value: string | boolean) => {
@@ -117,6 +118,7 @@ export default function NovoClientePage() {
             parseFloat(formData.revenueOutros || "0"),
           employeesCount: parseInt(formData.employeesCount || "0"),
           payrollLast12m: parseFloat(formData.payrollLast12m || "0"),
+          issAliquota: formData.issAliquota,
         }),
       });
 
@@ -302,6 +304,27 @@ export default function NovoClientePage() {
                 value={formData.activityDesc}
                 onChange={(e) => updateFormData("activityDesc", e.target.value)}
               />
+            </div>
+
+            {/* Localização */}
+            {/* Alíquota ISS */}
+            <div className="mt-4 pt-4 border-t">
+              <h4 className="text-md font-semibold text-slate-700 mb-3">Informações Tributárias</h4>
+              <div className="space-y-2">
+                <Label htmlFor="issAliquota">Alíquota de ISS (%) *</Label>
+                <Input
+                  id="issAliquota"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="20"
+                  placeholder="Ex: 5.0"
+                  value={formData.issAliquota}
+                  onChange={(e) => updateFormData('issAliquota', e.target.value)}
+                  required
+                />
+                <p className="text-xs text-slate-500">Informe a alíquota de ISS aplicável aos serviços desta empresa</p>
+              </div>
             </div>
 
             {/* Localização */}

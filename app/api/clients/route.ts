@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
         
         // Localização
         municipioIBGE: body.municipioIBGE || '3550308',
+        issAliquota: body.issAliquota ? parseFloat(body.issAliquota) / 100 : 0.05,
         
         // Dados Financeiros
         revenueServicos: body.revenueServicos ? parseFloat(body.revenueServicos) : null,
