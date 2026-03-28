@@ -586,18 +586,24 @@ export class DigitalTwinFiscal {
       melhorCenario.economiaVsAtual / this.empresa.receitas.total;
 
     let notaRegime = 100;
-    if (economiaPotencial > 0.05) notaRegime = 60;
-    if (economiaPotencial > 0.1) notaRegime = 40;
-    if (economiaPotencial > 0.15) notaRegime = 20;
+    let obsRegime = economiaPotencial > 0.05
+      ? `Potencial economia de ${(economiaPotencial * 100).toFixed(1)}% do faturamento`
+      : "Regime adequado";
+
+    if (this.empresa.regimeAtual === "MEI" && this.empresa.receitas.total > LIMITES.MEI) {
+      notaRegime = 0;
+      obsRegime = "CRÍTICO: Faturamento excedeu limite legal do MEI";
+    } else {
+      if (economiaPotencial > 0.05) notaRegime = 60;
+      if (economiaPotencial > 0.1) notaRegime = 40;
+      if (economiaPotencial > 0.15) notaRegime = 20;
+    }
 
     fatores.push({
       fator: "Adequação do Regime Tributário",
       peso: 30,
       nota: notaRegime,
-      observacao:
-        economiaPotencial > 0.05
-          ? `Potencial economia de ${(economiaPotencial * 100).toFixed(1)}% do faturamento`
-          : "Regime adequado",
+      observacao: obsRegime,
     });
     scoreTotal += notaRegime * 0.3;
 
@@ -647,13 +653,21 @@ export class DigitalTwinFiscal {
     scoreTotal += notaCarga * 0.2;
 
     // 4. Regularidade Fiscal (peso 15)
+    let notaRegularidade = 90;
+    let obsRegularidade = "Empresa em situação regular";
+
+    if (this.empresa.regimeAtual === "MEI" && this.empresa.receitas.total > LIMITES.MEI) {
+      notaRegularidade = 0;
+      obsRegularidade = "Irregular: Operando como MEI acima do teto legal";
+    }
+
     fatores.push({
       fator: "Regularidade Fiscal",
       peso: 15,
-      nota: 90,
-      observacao: "Empresa em situação regular",
+      nota: notaRegularidade,
+      observacao: obsRegularidade,
     });
-    scoreTotal += 90 * 0.15;
+    scoreTotal += notaRegularidade * 0.15;
 
     // 5. Oportunidades de Planejamento (peso 10)
     const oportunidades = await this.detectarOportunidades();
