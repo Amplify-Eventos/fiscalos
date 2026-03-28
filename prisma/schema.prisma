@@ -53,6 +53,7 @@ model clients {
   totalSalary      Decimal?      @db.Decimal(15, 2)
   municipio        String?
   municipioIBGE    String?
+    issAliquota      Decimal?      @db.Decimal(10, 4)
   uf               String?
   users            users         @relation(fields: [userId], references: [id], onDelete: Cascade)
   simulations      simulations[]
