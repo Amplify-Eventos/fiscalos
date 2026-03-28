@@ -619,6 +619,14 @@ export class DigitalTwinFiscal {
             : `Fator R de ${(fatorR * 100).toFixed(1)}% - abaixo do ideal`,
       });
       scoreTotal += notaFatorR * 0.25;
+    } else {
+      fatores.push({
+        fator: "Fator R",
+        peso: 25,
+        nota: 100,
+        observacao: "Não aplicável (Não é serviço ou é MEI)",
+      });
+      scoreTotal += 100 * 0.25;
     }
 
     // 3. Carga Tributária vs Setor (peso 20)
