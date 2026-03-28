@@ -99,7 +99,7 @@ export interface CenarioSimulacao {
   id: string;
   nome: string;
   descricao: string;
-  regime: "SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL";
+  regime: "MEI" | "SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL";
   estrutura: "UNICA" | "DUAS_EMPRESAS" | "HOLDING";
   anexoSimples?: "I" | "II" | "III" | "IV" | "V";
 
@@ -278,7 +278,7 @@ export class DigitalTwinFiscal {
    * Simula um cenário fiscal específico
    */
   async simularCenario(
-    regime: "SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL",
+    regime: "MEI" | "SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL",
     estrutura: "UNICA" | "DUAS_EMPRESAS" | "HOLDING" = "UNICA",
     anexo?: "I" | "II" | "III" | "IV" | "V",
   ): Promise<CenarioSimulacao> {
@@ -309,6 +309,21 @@ export class DigitalTwinFiscal {
 
     let impostoTotal = 0;
     const detalhes: CenarioSimulacao["detalhes"] = {};
+
+    if (regime === "MEI") {
+      if (receita > LIMITES.MEI) {
+        restricoes.push("Faturamento excede limite do MEI");
+        viavel = false;
+      }
+      if (this.empresa.naturezaJuridica !== "MEI" && this.empresa.naturezaJuridica !== "EI") {
+        restricoes.push("Natureza Jurídica não permite MEI");
+        viavel = false;
+      }
+      if (viavel) {
+        impostoTotal = 75.60 * 12; // Valor médio DAS MEI
+        detalhes.das = 75.60;
+      }
+    }
 
     // Calcular impostos por regime
     if (regime === "SIMPLES_NACIONAL" && viavel) {
@@ -502,7 +517,8 @@ export class DigitalTwinFiscal {
   async rodarTodasSimulacoes(): Promise<CenarioSimulacao[]> {
     const promises: Promise<CenarioSimulacao>[] = [];
 
-    const regimes: ("SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL")[] = [
+    const regimes: ("MEI" | "SIMPLES_NACIONAL" | "LUCRO_PRESUMIDO" | "LUCRO_REAL")[] = [
+      "MEI",
       "SIMPLES_NACIONAL",
       "LUCRO_PRESUMIDO",
       "LUCRO_REAL",
@@ -586,7 +602,7 @@ export class DigitalTwinFiscal {
     scoreTotal += notaRegime * 0.3;
 
     // 2. Fator R (peso 25) - só para serviços
-    if (this.empresa.tipoAtividade === "SERVICOS") {
+    if (this.empresa.tipoAtividade === "SERVICOS" && this.empresa.regimeAtual !== "MEI") {
       const fatorR = this.calcularFatorR();
       let notaFatorR = 100;
       if (fatorR < 0.28) notaFatorR = 50;
@@ -673,7 +689,8 @@ export class DigitalTwinFiscal {
     const estrategias: EstrategiaRecomendada[] = [];
 
     // 1. Fator R
-    const analiseFatorR = await analisarFatorR(
+    if (this.empresa.regimeAtual !== "MEI") {
+      const analiseFatorR = await analisarFatorR(
       this.empresa.receitas.total,
       this.empresa.custos.folhaTotal,
       await this.identificarAnexoSimples(),
@@ -722,6 +739,7 @@ export class DigitalTwinFiscal {
           ],
         });
       }
+    }
     }
 
     // 3. Mudança de Regime
@@ -934,7 +952,7 @@ export class DigitalTwinFiscal {
     }
 
     const fatorR = this.calcularFatorR();
-    if (fatorR < 0.28 && this.empresa.tipoAtividade === "SERVICOS") {
+    if (fatorR < 0.28 && this.empresa.tipoAtividade === "SERVICOS" && this.empresa.regimeAtual !== "MEI") {
       problemas.push("Fator R abaixo do ideal para serviços (Anexo V)");
     }
 
